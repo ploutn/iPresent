@@ -1,0 +1,25 @@
+directories:
+  output: release/${version}
+  buildResources: dist
+productName: Church Presenter
+appId: com.example.churchpresenter
+asar: true
+files:
+  - filter:
+      - dist/**/*
+      - dist-electron/**/*
+mac:
+  target:
+    - dmg
+  extendInfo:
+    NSAppTransportSecurity:
+      NSAllowsArbitraryLoads: true
+win:
+  target:
+    - nsis
+  icon: assets/app-icon.png
+linux:
+  target:
+    - AppImage
+  icon: assets/app-icon.png
+electronVersion: 35.0.3
