@@ -1,0 +1,6 @@
+# Ignore build artifacts
+release/
+node_modules/
+*.exe
+*.node
+*.asar
