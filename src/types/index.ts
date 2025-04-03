@@ -1,5 +1,12 @@
 // Make sure these types are properly exported
-export type ContentType = 'song' | 'image' | 'video' | 'announcement' | 'blank' | 'prayer' | 'bible';
+export type ContentType =
+  | "song"
+  | "image"
+  | "video"
+  | "announcement"
+  | "blank"
+  | "prayer"
+  | "bible";
 
 export interface ContentItem {
   id: string;
@@ -11,21 +18,21 @@ export interface ContentItem {
 }
 
 export interface Song extends ContentItem {
-  type: 'song';
+  type: "song";
   lyrics: string;
   author: string;
   ccliNumber?: string;
 }
 
 export interface Media extends ContentItem {
-  type: 'image' | 'video';
+  type: "image" | "video";
   url: string;
   thumbnail?: string;
   duration?: number;
 }
 
 export interface Announcement extends ContentItem {
-  type: 'announcement';
+  type: "announcement";
 }
 
 export interface ScheduledItem {
@@ -33,7 +40,9 @@ export interface ScheduledItem {
   contentId: string;
   scheduledFor: Date;
   duration: number;
+  delay: number;
   order: number;
+  transition?: "fade" | "slide" | "zoom";
 }
 
 export interface Slide {
@@ -48,7 +57,7 @@ export interface Slide {
 export interface Screen {
   id: string;
   name: string;
-  type: 'output' | 'preview' | 'control';
+  type: "output" | "preview" | "control";
   isActive: boolean;
 }
 

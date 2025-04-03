@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
-import { Button } from './ui/button';
-import { ScrollArea } from './ui/scroll-area';
-import { Dialog, DialogContent } from './ui/dialog';
-import { useContentStore } from '../stores/useContentStore';
-import { usePresentationStore } from '../store/presentationStore';
-import { ContentItem, Slide } from '../types';
+import React, { useState } from "react";
+import { Plus } from "lucide-react";
+import { Button } from "./ui/button";
+import { ScrollArea } from "./ui/scroll-area";
+import { Dialog, DialogContent } from "./ui/dialog";
+import { useContentStore } from "../stores/useContentStore";
+import { usePresentationStore } from "../store/presentationStore";
+import { ContentItem, Slide } from "../types";
+import { LexicalEditor } from "./LexicalEditor";
 
 export function AnnouncementLibrary() {
   const { items } = useContentStore();
@@ -15,21 +16,21 @@ export function AnnouncementLibrary() {
     title: string;
     content: string;
     id: string;
-    type: 'announcement';
+    type: "announcement";
     createdAt: Date;
     updatedAt: Date;
   }
 
   const [newAnnouncement, setNewAnnouncement] = useState<NewAnnouncement>({
-    id: '',
-    title: '',
-    content: '',
-    type: 'announcement',
+    id: "",
+    title: "",
+    content: "",
+    type: "announcement",
     createdAt: new Date(),
-    updatedAt: new Date()
+    updatedAt: new Date(),
   });
 
-  const announcements = items.filter(item => item.type === 'announcement');
+  const announcements = items.filter((item) => item.type === "announcement");
 
   const { addItem } = useContentStore();
 
@@ -37,36 +38,36 @@ export function AnnouncementLibrary() {
     const timestamp = Date.now();
     const announcementItem = {
       id: String(timestamp),
-      type: 'announcement' as const,
+      type: "announcement" as const,
       title: newAnnouncement.title,
-      content: newAnnouncement.content
+      content: newAnnouncement.content,
     };
 
     // Add to content store
     addItem({
       ...newAnnouncement,
       id: String(timestamp),
-      type: 'announcement',
+      type: "announcement",
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     });
 
     // Add to presentation store
     const newSlide: Slide = {
       id: timestamp,
-      type: 'announcement',
+      type: "announcement",
       title: newAnnouncement.title,
-      content: newAnnouncement.content
+      content: newAnnouncement.content,
     };
     addSlide(newSlide);
 
     setNewAnnouncement({
-      id: '',
-      title: '',
-      content: '',
-      type: 'announcement',
+      id: "",
+      title: "",
+      content: "",
+      type: "announcement",
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     });
     setIsDialogOpen(false);
   };
@@ -94,7 +95,9 @@ export function AnnouncementLibrary() {
               className="p-4 bg-slate-800 rounded-lg hover:bg-slate-700 transition-colors cursor-pointer"
             >
               <h3 className="font-medium mb-2">{announcement.title}</h3>
-              <p className="text-sm text-slate-400 line-clamp-3">{announcement.content}</p>
+              <p className="text-sm text-slate-400 line-clamp-3">
+                {announcement.content}
+              </p>
             </div>
           ))}
         </div>
@@ -109,22 +112,29 @@ export function AnnouncementLibrary() {
                 <input
                   type="text"
                   value={newAnnouncement.title}
-                  onChange={(e) => setNewAnnouncement(prev => ({ ...prev, title: e.target.value }))}
+                  onChange={(e) =>
+                    setNewAnnouncement((prev) => ({
+                      ...prev,
+                      title: e.target.value,
+                    }))
+                  }
                   placeholder="Title"
                   className="w-full p-2 bg-slate-800 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <textarea
-                  value={newAnnouncement.content}
-                  onChange={(e) => setNewAnnouncement(prev => ({ ...prev, content: e.target.value }))}
-                  placeholder="Content"
-                  rows={6}
-                  className="w-full p-2 bg-slate-800 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <LexicalEditor
+                  content={newAnnouncement.content}
+                  onChange={(content) =>
+                    setNewAnnouncement((prev) => ({ ...prev, content }))
+                  }
+                  placeholder="Enter announcement content..."
                 />
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>
+                  Cancel
+                </Button>
                 <Button onClick={handleAddAnnouncement}>Save</Button>
               </div>
             </div>
