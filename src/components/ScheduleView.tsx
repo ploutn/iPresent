@@ -1,39 +1,28 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { useContentStore } from "../stores/useContentStore";
 import { ScrollArea } from "./ui/scroll-area";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 import {
   GripVertical,
-  X,
   Play,
-  List,
   MoreHorizontal,
   Clock,
-  ChevronUp,
-  ChevronDown,
-  Trash2,
-  Copy,
   Edit2,
+  Copy,
+  Trash2,
 } from "lucide-react";
 import { ScheduledItem } from "../types";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { Slider } from "./ui/slider";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { Label } from "./ui/label";
+import { Slider } from "./ui/slider";
 
 export function ScheduleView() {
   const { scheduledItems, unscheduleItem, reorderItems, updateItemTiming } =
@@ -75,6 +64,10 @@ export function ScheduleView() {
 
   return (
     <div className="h-full flex flex-col overflow-hidden bg-black text-white">
+      {/* Header */}
+      <div className="p-3 font-semibold text-sm">SCHEDULE</div>
+
+      {/* Content */}
       <div className="flex-1 overflow-hidden">
         {scheduledItems.length > 0 ? (
           <DragDropContext onDragEnd={handleDragEnd}>
@@ -124,16 +117,6 @@ export function ScheduleView() {
                                         {formatTime(item.duration || 0)}
                                       </span>
                                     </div>
-                                  </div>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-xs text-muted-foreground">
-                                      Order: {item.order}
-                                    </span>
-                                    {item.delay > 0 && (
-                                      <span className="text-xs text-yellow-500">
-                                        Delay: {formatTime(item.delay)}
-                                      </span>
-                                    )}
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-1">
@@ -192,11 +175,12 @@ export function ScheduleView() {
             </Droppable>
           </DragDropContext>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-muted-foreground p-4">
-            <p className="text-center">
+          <div className="flex-1 flex flex-col items-center justify-center text-gray-400 p-4">
+            <p className="text-center text-sm">
               Your presentation queue is empty.
-              <br />
-              Add items from the library to get started.
+            </p>
+            <p className="text-center text-sm mt-1">
+              Add items from the library to get started
             </p>
           </div>
         )}

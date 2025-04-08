@@ -9,7 +9,6 @@ import { AnnouncementsPage } from "./components/pages/AnnouncementsPage";
 import { useSidebar } from "./components/hooks/useSidebar";
 import { ContentForm } from "./components/ContentForm";
 import { useContentStore } from "./stores/useContentStore";
-import { OutputManagement } from "./components/OutputManagement";
 import { Preview } from "./components/Preview";
 import { ScheduleView } from "./components/ScheduleView";
 import { LivePresentation } from "./components/LivePresentation";
@@ -21,25 +20,23 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./components/ui/tooltip";
-import {
-  Play,
-  Pause,
-  SkipBack,
-  SkipForward,
-  Volume2,
-  VolumeX,
-  Settings,
-  Maximize2,
-  Minimize2,
-} from "lucide-react";
+import { Settings, Maximize2, Minimize2 } from "lucide-react";
+import { CountdownTimer } from "./components/interactive/CountdownTimer";
+import { PollElement } from "./components/interactive/PollElement";
+import { InteractiveButton } from "./components/interactive/InteractiveButton";
+import { PresenterNotes } from "./components/interactive/PresenterNotes";
+import { InteractiveElementForm } from "./components/interactive/InteractiveElementForm";
+import { AnyInteractiveElement } from "./types/interactive";
 
 function App() {
   const { activeTab, setActiveTab } = useSidebar();
   const [showContentForm, setShowContentForm] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const { setSelectedItem } = useContentStore();
+  const [interactiveElements, setInteractiveElements] = useState<
+    AnyInteractiveElement[]
+  >([]);
+  const [showInteractiveElementForm, setShowInteractiveElementForm] =
+    useState(false);
 
   // Set a default active tab if none is selected
   if (!activeTab) {
@@ -67,7 +64,7 @@ function App() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-[#1a1a1a] text-white overflow-hidden">
+    <div className="h-screen flex flex-col bg-[#1a1a1a] text-white overflow-auto">
       {/* Header */}
       <header className="h-12 border-b border-gray-800 px-4 flex items-center justify-between bg-[#2D3748] shadow-md">
         <div className="flex items-center gap-4">
@@ -98,7 +95,7 @@ function App() {
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-auto">
         <ResizablePanelGroup direction="horizontal">
           {/* Sidebar */}
           <ResizablePanel
@@ -125,29 +122,7 @@ function App() {
                           size="icon"
                           className="h-8 w-8 hover:bg-gray-700"
                         >
-                          {isMuted ? (
-                            <VolumeX className="h-4 w-4" />
-                          ) : (
-                            <Volume2 className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Toggle Mute</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 hover:bg-gray-700"
-                        >
-                          {isFullscreen ? (
-                            <Minimize2 className="h-4 w-4" />
-                          ) : (
-                            <Maximize2 className="h-4 w-4" />
-                          )}
+                          <Maximize2 className="h-4 w-4" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>Toggle Fullscreen</TooltipContent>
@@ -163,58 +138,83 @@ function App() {
                 </div>
               </div>
 
-              {/* Controls Bar */}
-              <div className="h-10 border-t border-gray-800 px-4 flex justify-between items-center bg-[#2D3748]">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-sm font-medium">Schedule</h2>
-                  <div className="flex items-center gap-1">
+              {/* Bottom Panels - Interactive Elements */}
+              <div className="flex-1 min-h-[200px] p-4 flex space-x-4 overflow-y-auto">
+                <div className="flex-1 rounded-lg overflow-hidden border border-gray-800 bg-[#1a1a1a] shadow-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-medium text-white">
+                      Interactive Elements
+                    </h3>
                     <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 hover:bg-gray-700"
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs border-gray-700 hover:bg-gray-700"
+                      onClick={() => setShowInteractiveElementForm(true)}
                     >
-                      <SkipBack className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 hover:bg-gray-700"
-                      onClick={() => setIsPlaying(!isPlaying)}
-                    >
-                      {isPlaying ? (
-                        <Pause className="h-3.5 w-3.5" />
-                      ) : (
-                        <Play className="h-3.5 w-3.5" />
-                      )}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-7 w-7 hover:bg-gray-700"
-                    >
-                      <SkipForward className="h-3.5 w-3.5" />
+                      Add Element
                     </Button>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-sm font-medium">Live</h2>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 text-xs bg-red-500/20 text-red-400 hover:bg-red-500/30"
-                  >
-                    Blackout
-                  </Button>
-                </div>
-              </div>
-
-              {/* Bottom Panels */}
-              <div className="h-64 p-4 flex space-x-4">
-                <div className="flex-1 rounded-lg overflow-hidden border border-gray-800 bg-[#1a1a1a] shadow-lg">
-                  <ScheduleView />
-                </div>
-                <div className="flex-1 rounded-lg overflow-hidden border border-gray-800 bg-[#1a1a1a] shadow-lg">
-                  <LivePresentation />
+                  <div className="grid grid-cols-2 gap-4 overflow-y-auto h-full max-h-[500px]">
+                    {interactiveElements.length === 0 ? (
+                      <div className="col-span-2 flex items-center justify-center h-full">
+                        <div className="text-center text-gray-500">
+                          <p>No interactive elements added</p>
+                          <Button
+                            variant="link"
+                            className="text-xs mt-2 text-blue-400"
+                            onClick={() => setShowInteractiveElementForm(true)}
+                          >
+                            Add your first element
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      interactiveElements.map((element) => (
+                        <div
+                          key={element.id}
+                          className="scale-90 origin-top-left"
+                        >
+                          {element.type === "timer" && (
+                            <CountdownTimer
+                              initialMinutes={element.initialMinutes}
+                              initialSeconds={element.initialSeconds}
+                              size="sm"
+                              showControls={element.showControls}
+                              autoStart={element.autoStart}
+                              className="h-full"
+                            />
+                          )}
+                          {element.type === "poll" && (
+                            <PollElement
+                              id={element.id}
+                              question={element.question}
+                              options={element.options}
+                              showResults={element.showResults}
+                              isVisible={element.isVisible}
+                            />
+                          )}
+                          {element.type === "button" && (
+                            <InteractiveButton
+                              id={element.id}
+                              label={element.label}
+                              action={element.action}
+                              variant={element.variant}
+                              isVisible={element.isVisible}
+                            />
+                          )}
+                          {element.type === "notes" && (
+                            <PresenterNotes
+                              id={element.id}
+                              title={element.title}
+                              notes={element.notes}
+                              checklist={element.checklist}
+                              isVisible={element.isVisible}
+                            />
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -248,43 +248,49 @@ function App() {
             </div>
 
             {/* Output Preview Content */}
-            <div className="p-4 h-1/3 min-h-[200px]">
-              <div className="h-full rounded-lg overflow-hidden border border-gray-800 bg-black shadow-lg">
-                <Preview />
+            <div className="p-4 flex flex-col gap-4 h-full">
+              <div className="h-1/3 rounded-lg overflow-hidden border border-gray-800 bg-black shadow-lg flex flex-col">
+                <div className="p-3 font-semibold text-sm">PREVIEW</div>
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="text-center">
+                    <p className="text-gray-400 text-sm">No output selected</p>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            {/* Outputs Section */}
-            <div className="h-10 border-b border-t border-gray-800 px-4 flex justify-between items-center bg-[#2D3748]">
-              <h2 className="text-sm font-medium">Outputs</h2>
-              <div className="flex space-x-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 text-xs hover:bg-gray-700"
-                >
-                  +
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 text-xs hover:bg-gray-700"
-                >
-                  ⋮
-                </Button>
+              {/* Live Presentation Section */}
+              <div className="h-[200px] rounded-lg overflow-hidden border border-gray-800 bg-[#1a1a1a] shadow-lg">
+                <LivePresentation />
               </div>
-            </div>
 
-            {/* Outputs Content */}
-            <div className="p-4 h-2/3">
-              <OutputManagement className="h-full" />
+              {/* Schedule View Section */}
+              <div className="h-[200px] rounded-lg overflow-hidden border border-gray-800 bg-[#1a1a1a] shadow-lg">
+                <ScheduleView />
+              </div>
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>
 
       {showContentForm && (
-        <ContentForm onClose={() => setShowContentForm(false)} />
+        <ContentForm
+          onClose={() => setShowContentForm(false)}
+          onAddInteractiveElements={(elements) => {
+            setInteractiveElements((prev) => [...prev, ...elements]);
+          }}
+          existingInteractiveElements={interactiveElements}
+        />
+      )}
+
+      {showInteractiveElementForm && (
+        <InteractiveElementForm
+          onAdd={(element) => {
+            setInteractiveElements((prev) => [...prev, element]);
+            setShowInteractiveElementForm(false);
+          }}
+          onClose={() => setShowInteractiveElementForm(false)}
+          open={showInteractiveElementForm}
+        />
       )}
     </div>
   );

@@ -126,13 +126,14 @@ export function LivePresentation() {
   const renderContent = () => {
     if (!selectedItem) {
       return (
-        <div className="flex flex-col items-center justify-center h-full text-center p-4">
+        <div className="flex flex-col items-center justify-center h-full text-center p-4 bg-black text-white">
+          <h2 className="text-lg font-semibold mb-4">LIVE</h2>
           <p className="text-sm text-gray-400 mb-3">Nothing is live</p>
           <Button
             variant="outline"
             className="text-xs bg-transparent border border-gray-800 text-gray-400 hover:bg-gray-800 h-8 px-3"
           >
-            <Play className="h-3.5 w-3.5 mr-2" /> Start Presentation
+            Start Presentation
           </Button>
         </div>
       );

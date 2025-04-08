@@ -1,29 +1,39 @@
 // components/ScheduleManager.tsx
-import React, { useState } from 'react';
-import { useContentStore } from '../stores/useContentStore';
-import { Clock, X } from 'lucide-react';
-import { Button } from './ui/button';
-import { Card } from './ui/card';
-import { ContentItem } from '../types';
+import React, { useState } from "react";
+import { useContentStore } from "../stores/useContentStore";
+import { Clock, X } from "lucide-react";
+import { Button } from "./ui/button";
+import { Card } from "./ui/card";
+import { ContentItem } from "../types";
 
 export function ScheduleManager() {
-  const { items, scheduledItems, scheduleItem, unscheduleItem } = useContentStore();
+  const { items, scheduledItems, scheduleItem, unscheduleItem } =
+    useContentStore();
   const [showScheduleForm, setShowScheduleForm] = useState(false);
-  const [selectedContentId, setSelectedContentId] = useState<string | null>(null);
-  const [selectedTime, setSelectedTime] = useState(new Date().toISOString().slice(0, 16));
-  const [selectedDuration, setSelectedDuration] = useState('5');
+  const [selectedContentId, setSelectedContentId] = useState<string | null>(
+    null
+  );
+  const [selectedTime, setSelectedTime] = useState(
+    new Date().toISOString().slice(0, 16)
+  );
+  const [selectedDuration, setSelectedDuration] = useState("5");
 
   const handleSchedule = () => {
     if (!selectedContentId) return;
-    const content = items.find(item => item.id === selectedContentId);
+    const content = items.find((item) => item.id === selectedContentId);
     if (content) {
       const newScheduledItem = {
         id: Date.now().toString(),
         contentId: selectedContentId,
         scheduledFor: new Date(selectedTime),
         duration: parseInt(selectedDuration),
-        contentType: content.type as 'song' | 'announcement' | 'image' | 'video',
-        order: scheduledItems.length // Add the required 'order' property
+        delay: 0, // Adding the required 'delay' property
+        contentType: content.type as
+          | "song"
+          | "announcement"
+          | "image"
+          | "video",
+        order: scheduledItems.length,
       };
       scheduleItem(newScheduledItem);
       setShowScheduleForm(false);
@@ -33,10 +43,12 @@ export function ScheduleManager() {
 
   return (
     <div className="flex flex-col h-full bg-[#2D3748] p-6 rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold text-white mb-4 tracking-tight">Schedule</h1>
+      <h1 className="text-2xl font-bold text-white mb-4 tracking-tight">
+        Schedule
+      </h1>
       <div className="flex-1 overflow-y-auto space-y-3">
         {scheduledItems.map((item) => {
-          const content = items.find(i => i.id === item.contentId);
+          const content = items.find((i) => i.id === item.contentId);
           if (!content) return null;
           return (
             <Card
@@ -47,7 +59,8 @@ export function ScheduleManager() {
                 <div>
                   <h3 className="font-medium text-lg">{content.title}</h3>
                   <p className="text-sm text-[#A0AEC0]">
-                    {new Date(item.scheduledFor).toLocaleTimeString()} ({item.duration} min)
+                    {new Date(item.scheduledFor).toLocaleTimeString()} (
+                    {item.duration} min)
                   </p>
                 </div>
                 <Button
@@ -67,16 +80,20 @@ export function ScheduleManager() {
         {showScheduleForm ? (
           <div className="space-y-3">
             <select
-              value={selectedContentId || ''}
+              value={selectedContentId || ""}
               onChange={(e) => setSelectedContentId(e.target.value)}
               className="w-full bg-[#4A5568] text-white px-4 py-2 rounded-md border border-[#4A5568] shadow-sm"
               title="Select content to schedule"
               aria-label="Select content to schedule"
             >
               <option value="">Select a song...</option>
-              {items.filter(item => item.type === 'song').map((item) => (
-                <option key={item.id} value={item.id}>{item.title}</option>
-              ))}
+              {items
+                .filter((item) => item.type === "song")
+                .map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.title}
+                  </option>
+                ))}
             </select>
             <input
               type="datetime-local"
@@ -94,7 +111,9 @@ export function ScheduleManager() {
               aria-label="Select duration in minutes"
             >
               {[1, 2, 3, 5, 10, 15, 20, 30].map((duration) => (
-                <option key={duration} value={duration}>{duration} min</option>
+                <option key={duration} value={duration}>
+                  {duration} min
+                </option>
               ))}
             </select>
             <div className="flex gap-2">

@@ -1,6 +1,15 @@
 // src/components/Editor.tsx
 import React, { useState, useEffect, useCallback } from "react";
-import { Book, Music, Image, Video, Plus, Edit2, Trash2 } from "lucide-react";
+import {
+  Book,
+  Music,
+  Image,
+  Video,
+  Plus,
+  Edit2,
+  Trash2,
+  Play,
+} from "lucide-react";
 import { ResizablePanelGroup, ResizablePanel } from "@/components/ui/resizable";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -10,9 +19,10 @@ import { BibleSearch } from "./BibleSearch";
 import { SongLibrary } from "./SongLibrary";
 import { MediaLibrary } from "./MediaLibrary";
 import { SlideEditor } from "./SlideEditor";
-import { Slide, Media } from "../types";
-import { ScreenControl } from './ScreenControl';
-import { usePresentationStore } from '../store/presentationStore';
+import { Slide, Media, ContentItem, Song, Announcement } from "../types";
+import { ScreenControl } from "./ScreenControl";
+import { usePresentationStore } from "../store/presentationStore";
+import { useContentStore } from "../stores/useContentStore";
 
 type TabId = "bible" | "songs" | "media";
 
@@ -64,6 +74,7 @@ export function Editor({
   const [isSlideEditDialogOpen, setIsSlideEditDialogOpen] = useState(false);
   const [currentEditSlide, setCurrentEditSlide] = useState<Slide | null>(null);
   const { addSlide } = usePresentationStore();
+  const { setSelectedItem } = useContentStore();
 
   const deleteSlide = useCallback(
     (id: number, e: React.MouseEvent) => {
@@ -76,25 +87,28 @@ export function Editor({
         }
       }
     },
-    [slides,  selectedSlide, setSelectedSlide] // Removed setSlides
+    [slides, selectedSlide, setSelectedSlide] // Removed setSlides
   );
 
-  const handleMediaPreview = useCallback((item: Media | null) => {
-    if (item) {
-      if (item.type === 'video') {
-        const video = document.createElement('video');
-        video.src = item.url;
-        video.controls = true;
-        setPreviewContent(item.url);
-      } else if (item.type === 'image') {
-        const img = document.createElement('img');
-        img.src = item.url;
-        img.onload = () => setPreviewContent(item.url);
+  const handleMediaPreview = useCallback(
+    (item: Media | null) => {
+      if (item) {
+        if (item.type === "video") {
+          const video = document.createElement("video");
+          video.src = item.url;
+          video.controls = true;
+          setPreviewContent(item.url);
+        } else if (item.type === "image") {
+          const img = document.createElement("img");
+          img.src = item.url;
+          img.onload = () => setPreviewContent(item.url);
+        }
+      } else {
+        setPreviewContent("Preview Area");
       }
-    } else {
-      setPreviewContent("Preview Area");
-    }
-  }, [setPreviewContent]);
+    },
+    [setPreviewContent]
+  );
 
   useEffect(() => {
     const slide = slides.find((slide) => slide.id === selectedSlide);
@@ -104,6 +118,57 @@ export function Editor({
       setPreviewContent("Preview Area");
     }
   }, [slides, selectedSlide, setPreviewContent]);
+
+  const handlePresentSlide = (slide: Slide) => {
+    const now = new Date();
+    let contentItem: ContentItem;
+
+    switch (slide.type) {
+      case "song":
+        contentItem = {
+          id: String(slide.id),
+          title: slide.title,
+          content: slide.content,
+          type: "song",
+          createdAt: now,
+          updatedAt: now,
+        } as Song;
+        break;
+      case "image":
+      case "video":
+        contentItem = {
+          id: String(slide.id),
+          title: slide.title,
+          content: slide.content,
+          type: slide.type,
+          url: slide.content,
+          createdAt: now,
+          updatedAt: now,
+        } as Media;
+        break;
+      case "announcement":
+        contentItem = {
+          id: String(slide.id),
+          title: slide.title,
+          content: slide.content,
+          type: "announcement",
+          createdAt: now,
+          updatedAt: now,
+        } as Announcement;
+        break;
+      default:
+        contentItem = {
+          id: String(slide.id),
+          title: slide.title,
+          content: slide.content,
+          type: "blank",
+          createdAt: now,
+          updatedAt: now,
+        };
+    }
+
+    setSelectedItem(contentItem);
+  };
 
   return (
     <div className={cn("h-full", className)}>
@@ -143,20 +208,56 @@ export function Editor({
         {/* Slide List */}
         <div className="h-full flex flex-col">
           <div className="p-2 border-b border-slate-800 flex justify-between items-center">
-            <Button variant="ghost" size="sm" className="flex-1" onClick={() => addSlide({ id: Date.now(), type: 'blank', title: 'New Slide', content: '' })}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-1"
+              onClick={() =>
+                addSlide({
+                  id: Date.now(),
+                  type: "blank",
+                  title: "New Slide",
+                  content: "",
+                })
+              }
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add Blank Slide
             </Button>
-            <Button variant="ghost" size="sm" className="ml-2" onClick={() => addSlide({ id: Date.now(), type: 'announcement', title: 'Announcement', content: '' })}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="ml-2"
+              onClick={() =>
+                addSlide({
+                  id: Date.now(),
+                  type: "announcement",
+                  title: "Announcement",
+                  content: "",
+                })
+              }
+            >
               <Plus className="h-4 w-4 mr-2" />
               Announcement
             </Button>
-            <Button variant="ghost" size="sm" className="ml-2" onClick={() => addSlide({ id: Date.now(), type: 'prayer', title: 'Prayer', content: '' })}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="ml-2"
+              onClick={() =>
+                addSlide({
+                  id: Date.now(),
+                  type: "prayer",
+                  title: "Prayer",
+                  content: "",
+                })
+              }
+            >
               <Plus className="h-4 w-4 mr-2" />
               Prayer
             </Button>
           </div>
-          
+
           <ScrollArea className="flex-1">
             <div className="space-y-1 p-2">
               {slides.map((slide) => (
@@ -179,6 +280,17 @@ export function Editor({
                       )}
                     </div>
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePresentSlide(slide);
+                        }}
+                      >
+                        <Play className="h-4 w-4" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"
@@ -211,7 +323,10 @@ export function Editor({
       </div>
 
       {/* Keep Dialog */}
-      <Dialog open={isSlideEditDialogOpen} onOpenChange={setIsSlideEditDialogOpen}>
+      <Dialog
+        open={isSlideEditDialogOpen}
+        onOpenChange={setIsSlideEditDialogOpen}
+      >
         <DialogContent className="sm:max-w-md">
           {currentEditSlide && (
             <SlideEditor

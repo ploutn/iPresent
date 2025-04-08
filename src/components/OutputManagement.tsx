@@ -1,157 +1,40 @@
-// components/OutputManagement.tsx
+// src/components/OutputManagement.tsx
 import React from "react";
-import {
-  Monitor,
-  Maximize2,
-  ExternalLink,
-  Settings,
-  Power,
-  Eye,
-  EyeOff,
-  Tv,
-  Clock,
-  Play,
-} from "lucide-react";
-import { Button } from "./ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
-import { Switch } from "./ui/switch";
-import { Label } from "./ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "./ui/dialog";
-import { useContentStore } from "../stores/useContentStore";
-import { ScreenState } from "../types/screenControl";
-import { DisplayDevice, OutputSettings } from "../types/outputManagement";
 import { useOutputManagement } from "../hooks/useOutputManagement";
-import { Schedule } from "./Schedule";
-import { LivePresentation } from "./LivePresentation";
-import { ScheduleView } from "./ScheduleView";
 
 interface OutputManagementProps {
   className?: string;
 }
 
-export function OutputManagement({ className }: OutputManagementProps) {
-  const { liveQueue } = useContentStore();
-  const {
-    screenState,
-    outputSettings,
-    toggleMainScreen,
-    toggleOutputDisplay,
-    toggleBlackout,
-    toggleFullscreen,
-    updateDisplayStatus,
-    updateDisplayResolution,
-    setActiveDisplay,
-  } = useOutputManagement();
-
-  // Extract isFullscreen from outputSettings
-  const { fullscreen: isFullscreen } = outputSettings;
-
-  // Get displays from outputSettings
-  const displays = outputSettings.externalDisplays;
+export function OutputManagement({ className = "" }: OutputManagementProps) {
+  const { displayDevices, activeDevice, setActiveDevice } =
+    useOutputManagement();
 
   return (
-    <div className={`h-full flex flex-col ${className}`}>
-      <div className="space-y-3 mb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div
-              className={`w-2 h-2 rounded-full ${
-                screenState.isMainScreenActive ? "bg-green-500" : "bg-gray-500"
-              }`}
-            ></div>
-            <span className="text-xs text-gray-400">Main</span>
-          </div>
-          <Switch
-            checked={screenState.isMainScreenActive}
-            onCheckedChange={toggleMainScreen}
-            className="scale-75"
-          />
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div
-              className={`w-2 h-2 rounded-full ${
-                screenState.isOutputActive ? "bg-green-500" : "bg-gray-500"
-              }`}
-            ></div>
-            <span className="text-xs text-gray-400">Output</span>
-          </div>
-          <Switch
-            checked={screenState.isOutputActive}
-            onCheckedChange={toggleOutputDisplay}
-            className="scale-75"
-          />
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div
-              className={`w-2 h-2 rounded-full ${
-                screenState.isBlackout ? "bg-red-500" : "bg-gray-500"
-              }`}
-            ></div>
-            <span className="text-xs text-gray-400">Blackout</span>
-          </div>
-          <Switch
-            checked={screenState.isBlackout}
-            onCheckedChange={toggleBlackout}
-            className="scale-75"
-          />
-        </div>
-
-        <div className="pt-2">
-          <div className="flex space-x-1">
-            <Button
-              className="flex-1 h-7 text-xs bg-transparent border border-gray-800 text-gray-400 hover:bg-gray-800"
-              onClick={toggleFullscreen}
-            >
-              <Maximize2 className="h-3 w-3 mr-1" />
-              Full
-            </Button>
-            <Button className="flex-1 h-7 text-xs bg-transparent border border-gray-800 text-gray-400 hover:bg-gray-800">
-              <Tv className="h-3 w-3 mr-1" />
-              Display
-            </Button>
-          </div>
-        </div>
+    <div className={`flex flex-col h-full ${className}`}>
+      <div className="p-6 border-b border-[#2D2D2D]">
+        <h2 className="text-lg font-semibold">SCREEN CONTROL</h2>
       </div>
-
-      {/* Schedule Section */}
-      <div className="mt-4">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-xs font-medium text-gray-400">Schedule</h3>
-          <Button className="h-6 text-xs bg-transparent border border-gray-800 text-gray-400 hover:bg-gray-800">
-            <Clock className="h-3 w-3 mr-1" /> Add
-          </Button>
-        </div>
-        <div className="h-32 border border-gray-800 rounded-lg overflow-hidden bg-black">
-          <ScheduleView />
-        </div>
-      </div>
-
-      {/* Live Section */}
-      <div className="mt-4">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-xs font-medium text-gray-400">Live</h3>
-          <Button className="h-6 text-xs bg-transparent border border-gray-800 text-gray-400 hover:bg-gray-800">
-            <Play className="h-3 w-3 mr-1" /> Start
-          </Button>
-        </div>
-        <div className="h-32 border border-gray-800 rounded-lg overflow-hidden bg-black">
-          <LivePresentation />
+      <div className="flex-1 p-6">
+        <div className="space-y-4">
+          <h3 className="text-md font-medium">Available Displays</h3>
+          {displayDevices.length === 0 ? (
+            <p className="text-slate-400">No external displays detected</p>
+          ) : (
+            <div className="space-y-2">
+              {displayDevices.map((device) => (
+                <button
+                  key={device.id}
+                  onClick={() => setActiveDevice(device.id)}
+                  className={`w-full p-3 rounded-md text-left ${
+                    activeDevice === device.id ? "bg-blue-600" : "bg-[#2D2D2D]"
+                  }`}
+                >
+                  {device.name}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

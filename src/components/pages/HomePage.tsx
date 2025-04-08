@@ -13,7 +13,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { cn } from "../../lib/utils";
 import { useContentStore } from "../../stores/useContentStore";
-// Remove Next.js router import
+import { useRouter } from "next/router";
 import {
   QuickAccessCustomize,
   useQuickAccessSettings,
@@ -101,7 +101,7 @@ export function HomePage() {
     });
 
   return (
-    <div className="h-full flex flex-col bg-[#1e293b]">
+    <div className="h-full flex flex-col bg-[#1e293b] overflow-y-auto">
       {/* Welcome Header */}
       <div className="p-6 border-b border-gray-700/50">
         <h1 className="text-2xl font-bold text-white mb-2">
