@@ -6,7 +6,7 @@ import { Dialog, DialogContent } from "./ui/dialog";
 import { useContentStore } from "../stores/useContentStore";
 import { usePresentationStore } from "../store/presentationStore";
 import { ContentItem, Slide } from "../types";
-import { LexicalEditor } from "./LexicalEditor";
+import { Textarea } from "./ui/textarea";
 
 export function AnnouncementLibrary() {
   const { items } = useContentStore();
@@ -123,12 +123,16 @@ export function AnnouncementLibrary() {
                 />
               </div>
               <div>
-                <LexicalEditor
-                  content={newAnnouncement.content}
-                  onChange={(content) =>
-                    setNewAnnouncement((prev) => ({ ...prev, content }))
+                <Textarea
+                  value={newAnnouncement.content}
+                  onChange={(e) =>
+                    setNewAnnouncement((prev) => ({
+                      ...prev,
+                      content: e.target.value,
+                    }))
                   }
                   placeholder="Enter announcement content..."
+                  className="w-full p-2 bg-slate-800 border border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[200px]"
                 />
               </div>
               <div className="flex justify-end gap-2">

@@ -1,7 +1,7 @@
 // components/ScreenControl.tsx
 import React from "react";
-import { OutputManagement } from "./OutputManagement";
+import { OutputManagementPanel } from "./OutputManagementPanel";
 
 export function ScreenControl() {
-  return <OutputManagement />;
+  return <OutputManagementPanel />;
 }

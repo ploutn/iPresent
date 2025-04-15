@@ -34,7 +34,7 @@
     --ring: 222.2 84% 4.9%;
 
     --radius: 0.5rem;
-     --preview-background: 0 0% 0%;
+    --preview-background: 0 0% 0%;
   }
 
   .dark {
@@ -76,4 +76,29 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Add wheel scrolling support */
+.wheel-scrollable {
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+}
+
+.wheel-scrollable::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.wheel-scrollable::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.5);
+  border-radius: 9999px;
+}
+
+.wheel-scrollable::-webkit-scrollbar-track {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 9999px;
+}
+
+.wheel-scrollable:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.7);
 }

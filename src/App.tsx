@@ -109,7 +109,7 @@ function App() {
 
           {/* Content Panel */}
           <ResizablePanel defaultSize={60} minSize={40}>
-            <div className="h-full flex flex-col">
+            <div className="h-full flex flex-col min-h-0">
               {/* Preview Header */}
               <div className="h-10 border-b border-gray-800 px-4 flex justify-between items-center bg-[#2D3748]">
                 <h2 className="text-sm font-medium">Preview</h2>
