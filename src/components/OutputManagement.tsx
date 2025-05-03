@@ -7,8 +7,10 @@ interface OutputManagementProps {
 }
 
 export function OutputManagement({ className = "" }: OutputManagementProps) {
-  const { displayDevices, activeDevice, setActiveDevice } =
-    useOutputManagement();
+  const { outputSettings, setActiveDisplay } = useOutputManagement();
+  const displayDevices = outputSettings.externalDisplays;
+  const activeDevice = outputSettings.activeDisplay;
+  const setActiveDevice = setActiveDisplay;
 
   return (
     <div className={`flex flex-col h-full ${className}`}>
