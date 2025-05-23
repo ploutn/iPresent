@@ -5,6 +5,8 @@ import {
   StageDisplayElement,
 } from "../types/stageDisplay";
 import { ContentItem, Slide } from "../types";
+import CountdownTimerDisplay from "./stageDisplayElements/CountdownTimerDisplay";
+import AnnouncementBannerDisplay from "./stageDisplayElements/AnnouncementBannerDisplay";
 
 interface StageDisplayPreviewProps {
   template: StageDisplayTemplate;
@@ -79,9 +81,13 @@ export function StageDisplayPreview({
       case "customText":
         return (
           <div className="h-full flex items-center justify-center overflow-hidden">
-            {element.content}
+            {element.text} {/* Changed from content to text */}
           </div>
         );
+      case "countdownTimer":
+        return <CountdownTimerDisplay element={element} />;
+      case "announcementBanner":
+        return <AnnouncementBannerDisplay element={element} />;
 
       default:
         return null;
@@ -92,28 +98,44 @@ export function StageDisplayPreview({
     <div
       className={`relative aspect-video bg-black rounded-md overflow-hidden ${className}`}
     >
-      {template.elements.map((element) => (
-        <div
-          key={element.id}
-          className="absolute overflow-hidden"
-          style={{
-            left: `${element.x}%`,
-            top: `${element.y}%`,
-            width: `${element.width}%`,
-            height: `${element.height}%`,
-            backgroundColor: element.backgroundColor || "rgba(0, 0, 0, 0.5)",
-            color: element.fontColor || "#ffffff",
-            fontSize: `${element.fontSize || 16}px`,
-            borderRadius: `${element.borderRadius || 0}px`,
-            zIndex: element.zIndex || 0,
-            border: "1px solid rgba(255, 255, 255, 0.2)",
-          }}
-        >
-          <div className="w-full h-full p-2 overflow-hidden">
-            {renderElementContent(element)}
+      {template.elements.map((element) => {
+        if (element.isVisible === false) {
+          return null; // Don't render if not visible
+        }
+        return (
+          <div
+            key={element.id}
+            className="absolute overflow-hidden"
+            style={{
+              left: `${element.x}%`,
+              top: `${element.y}%`,
+              width: `${element.width}%`,
+              height: `${element.height}%`,
+              backgroundColor: element.backgroundColor || "rgba(0, 0, 0, 0.5)",
+              color: element.fontColor || "#ffffff",
+              fontFamily: element.fontFamily || "Arial",
+              fontSize: `${element.fontSize || 16}px`,
+              borderRadius: `${element.borderRadius || 0}px`,
+              zIndex: element.zIndex || 0,
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              textAlign: element.textAlign || "left",
+              fontWeight: element.fontWeight || "normal", // Apply font weight
+              fontStyle: element.fontStyle || "normal", // Apply font style
+              textDecoration: element.textDecoration || "none", // Apply text decoration
+            }}
+          >
+            {/* For new components that manage their own padding/internal layout, we might not need the inner div or p-2 */}
+            {element.type === "countdownTimer" ||
+            element.type === "announcementBanner" ? (
+              renderElementContent(element)
+            ) : (
+              <div className="w-full h-full p-2 overflow-hidden">
+                {renderElementContent(element)}
+              </div>
+            )}
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

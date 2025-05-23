@@ -27,6 +27,7 @@ export const defaultTemplates: StageDisplayTemplate[] = [
         fontColor: "#ffffff",
         borderRadius: 4,
         zIndex: 0,
+        isVisible: true, // Added
       },
       {
         id: "next-slide",
@@ -39,6 +40,7 @@ export const defaultTemplates: StageDisplayTemplate[] = [
         fontColor: "#ffffff",
         borderRadius: 4,
         zIndex: 0,
+        isVisible: true, // Added
       },
       {
         id: "clock",
@@ -52,6 +54,7 @@ export const defaultTemplates: StageDisplayTemplate[] = [
         fontSize: 24,
         borderRadius: 4,
         zIndex: 0,
+        isVisible: true, // Added
       },
       {
         id: "timer",
@@ -65,6 +68,7 @@ export const defaultTemplates: StageDisplayTemplate[] = [
         fontSize: 24,
         borderRadius: 4,
         zIndex: 0,
+        isVisible: true, // Added
       },
     ],
   },
@@ -84,6 +88,7 @@ export const defaultTemplates: StageDisplayTemplate[] = [
         fontColor: "#ffffff",
         borderRadius: 4,
         zIndex: 0,
+        isVisible: true, // Added
       },
       {
         id: "next-slide",
@@ -96,6 +101,7 @@ export const defaultTemplates: StageDisplayTemplate[] = [
         fontColor: "#ffffff",
         borderRadius: 4,
         zIndex: 0,
+        isVisible: true, // Added
       },
       {
         id: "clock",
@@ -109,6 +115,7 @@ export const defaultTemplates: StageDisplayTemplate[] = [
         fontSize: 20,
         borderRadius: 4,
         zIndex: 0,
+        isVisible: true, // Added
       },
       {
         id: "timer",
@@ -122,6 +129,7 @@ export const defaultTemplates: StageDisplayTemplate[] = [
         fontSize: 20,
         borderRadius: 4,
         zIndex: 0,
+        isVisible: true, // Added
       },
       {
         id: "custom-text",
@@ -136,6 +144,7 @@ export const defaultTemplates: StageDisplayTemplate[] = [
         fontSize: 14,
         borderRadius: 4,
         zIndex: 0,
+        isVisible: true, // Added
       },
     ],
   },
@@ -155,6 +164,7 @@ export const defaultTemplates: StageDisplayTemplate[] = [
         fontColor: "#ffffff",
         borderRadius: 4,
         zIndex: 0,
+        isVisible: true, // Added
       },
       {
         id: "clock",
@@ -168,6 +178,7 @@ export const defaultTemplates: StageDisplayTemplate[] = [
         fontSize: 24,
         borderRadius: 4,
         zIndex: 0,
+        isVisible: true, // Added
       },
     ],
   },
@@ -187,6 +198,7 @@ export const defaultTemplates: StageDisplayTemplate[] = [
         fontColor: "#ffffff",
         borderRadius: 4,
         zIndex: 0,
+        isVisible: true, // Added
       },
       {
         id: "next-slide",
@@ -199,6 +211,7 @@ export const defaultTemplates: StageDisplayTemplate[] = [
         fontColor: "#ffffff",
         borderRadius: 4,
         zIndex: 0,
+        isVisible: true, // Added
       },
       {
         id: "clock",
@@ -212,6 +225,7 @@ export const defaultTemplates: StageDisplayTemplate[] = [
         fontSize: 20,
         borderRadius: 4,
         zIndex: 0,
+        isVisible: true, // Added
       },
       {
         id: "timer",
@@ -225,6 +239,7 @@ export const defaultTemplates: StageDisplayTemplate[] = [
         fontSize: 20,
         borderRadius: 4,
         zIndex: 0,
+        isVisible: true, // Added
       },
       {
         id: "custom-text",
@@ -239,6 +254,7 @@ export const defaultTemplates: StageDisplayTemplate[] = [
         fontSize: 16,
         borderRadius: 4,
         zIndex: 0,
+        isVisible: true, // Added
       },
     ],
   },

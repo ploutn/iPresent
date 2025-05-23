@@ -1,18 +1,25 @@
 import React, { useState } from "react";
 import { Sidebar } from "./components/Sidebar";
-import { HomePage } from "./components/pages/HomePage";
-import { SongsPage } from "./components/pages/SongsPage";
-import { MediaPage } from "./components/pages/MediaPage";
-import { SettingsPage } from "./components/pages/SettingsPage";
-import { BiblePage } from "./components/pages/BiblePage";
-import { AnnouncementsPage } from "./components/pages/AnnouncementsPage";
+import { HomePage } from "./components/home/HomePage";
+import SongsPage from "./components/songs/SongsPage";
+import { MediaPage } from "./components/media/MediaPage";
+import { SettingsPage } from "./components/settings/SettingsPage";
+import { BiblePage } from "./components/bible/BiblePage";
+import { AnnouncementsPage } from "./components/announcements/AnnouncementsPage";
+import { PresentationsPage } from "./components/presentations/PresentationsPage";
+import { PresentationViewPage } from "./pages/PresentationViewPage";
+import OutputWindow from "./pages/OutputWindow"; // Added import for OutputWindow
 import { useSidebar } from "./components/hooks/useSidebar";
 import { ContentForm } from "./components/ContentForm";
 import { useContentStore } from "./stores/useContentStore";
-import { Preview } from "./components/Preview";
+import { Preview } from "./components/Preview"; // Ensure Preview is imported
 import { ScheduleView } from "./components/ScheduleView";
 import { LivePresentation } from "./components/LivePresentation";
-import { ResizablePanel, ResizablePanelGroup } from "./components/ui/resizable";
+import {
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizableHandle,
+} from "./components/ui/resizable";
 import { Button } from "./components/ui/button";
 import {
   Tooltip,
@@ -42,7 +49,7 @@ import { PresenterNotes } from "./components/interactive/PresenterNotes";
 import { InteractiveElementForm } from "./components/interactive/InteractiveElementForm";
 import { AnyInteractiveElement } from "./types/interactive";
 
-function App() {
+function MainAppContent() {
   const { activeTab, setActiveTab } = useSidebar();
   const [showContentForm, setShowContentForm] = useState(false);
   const { setSelectedItem } = useContentStore();
@@ -55,6 +62,8 @@ function App() {
     useState<AnyInteractiveElement | null>(null);
   const [theme, setTheme] = useState("dark");
   const [showShortcuts, setShowShortcuts] = useState(false);
+
+  console.log("Current activeTab in App.tsx:", activeTab); // DEBUG LOG
 
   // Set a default active tab if none is selected
   if (!activeTab) {
@@ -74,8 +83,37 @@ function App() {
         return <MediaPage />;
       case "announcements":
         return <AnnouncementsPage />;
+      case "presentations":
+        return <PresentationsPage />;
+        return (
+          <h1
+            style={{
+              backgroundColor: "pink",
+              color: "blue",
+              fontSize: "2rem",
+              padding: "1rem",
+            }}
+          >
+            DEBUG: APP.TSX - PRESENTATIONS CASE - IS THIS VISIBLE?
+          </h1>
+        );
       case "settings":
         return <SettingsPage />;
+      case "schedule-live":
+        return (
+          <div className="flex h-full w-full gap-4">
+            <div className="flex-1 min-w-0 border-r border-gray-800 pr-2 flex items-center justify-center">
+              <div className="aspect-[16/9] w-full max-w-full flex items-center justify-center">
+                <ScheduleView />
+              </div>
+            </div>
+            <div className="flex-1 min-w-0 pl-2 flex items-center justify-center">
+              <div className="aspect-[16/9] w-full max-w-full flex items-center justify-center">
+                <LivePresentation />
+              </div>
+            </div>
+          </div>
+        );
       default:
         return <HomePage />;
     }
@@ -130,15 +168,22 @@ function App() {
     );
   };
 
+  // Determine if the sidebar and main layout should be shown
+  const showMainLayout = true;
+
+  if (!showMainLayout) {
+    return <PresentationViewPage />;
+  }
+
   return (
-    <div className="h-screen flex flex-col bg-[#181A20] text-white overflow-hidden relative">
+    <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden relative">
       {/* Modern Header */}
-      <header className="h-14 border-b border-gray-800 px-6 flex items-center justify-between bg-[#23263A] shadow-md z-10">
+      <header className="h-14 border-b border-border px-6 flex items-center justify-between bg-card shadow-md z-10">
         <div className="flex items-center gap-4">
-          <span className="text-2xl font-extrabold tracking-tight text-blue-400">
+          <span className="text-2xl font-extrabold tracking-tight text-primary">
             iPresent Pro
           </span>
-          <span className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 font-medium text-xs">
+          <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium text-xs">
             Connected
           </span>
         </div>
@@ -149,7 +194,7 @@ function App() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-9 w-9 hover:bg-gray-700"
+                  className="h-9 w-9 hover:bg-accent"
                   onClick={handleThemeToggle}
                 >
                   {theme === "dark" ? (
@@ -168,7 +213,7 @@ function App() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-9 w-9 hover:bg-gray-700"
+                  className="h-9 w-9 hover:bg-accent"
                   onClick={() => setShowShortcuts(true)}
                 >
                   <Keyboard className="h-5 w-5" />
@@ -183,7 +228,7 @@ function App() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-9 w-9 hover:bg-gray-700"
+                  className="h-9 w-9 hover:bg-accent"
                 >
                   <HelpCircle className="h-5 w-5" />
                 </Button>
@@ -197,247 +242,65 @@ function App() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-9 w-9 hover:bg-gray-700"
+                  className="h-9 w-9 hover:bg-accent"
+                  onClick={() => setActiveTab("schedule-live")}
                 >
-                  <User className="h-5 w-5" />
+                  <Play className="h-5 w-5" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Account</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 hover:bg-gray-700"
-                >
-                  <Settings className="h-5 w-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Settings</TooltipContent>
+              <TooltipContent>Schedule & Live</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
       </header>
-
-      {/* Main Content Layout */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex flex-1 min-h-0">
         {/* Sidebar */}
-        <aside className="w-20 bg-[#1a1a1a] border-r border-gray-800 flex flex-col items-center py-4 space-y-4">
+        <div className="w-[100px] bg-card border-r border-border flex flex-col items-center py-6 h-full overflow-y-auto">
           <Sidebar onSelectItem={setSelectedItem} />
-        </aside>
-        {/* Main Panel */}
-        <main className="flex-1 flex flex-col min-h-0 bg-[#20222E]">
-          <div className="flex-1 flex flex-col min-h-0">
-            <div className="flex-1 p-6 overflow-auto">
-              <div className="rounded-2xl shadow-xl border border-gray-800 bg-[#23263A] p-6 min-h-[400px]">
-                {renderActiveContent()}
-              </div>
-            </div>
-            {/* Bottom Panels */}
-            <div className="h-64 p-6 flex space-x-6">
-              {/* Interactive Elements Panel */}
-              <div className="flex-1 rounded-2xl overflow-hidden border border-gray-800 bg-[#1a1a1a] shadow-lg flex flex-col">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
-                  <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                    <span className="text-blue-400">●</span> Interactive
-                    Elements
-                  </h3>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 px-3 text-xs border-gray-700 hover:bg-gray-700"
-                    onClick={() => {
-                      setEditingElement(null);
-                      setShowInteractiveElementForm(true);
-                    }}
-                  >
-                    <Plus className="h-4 w-4 mr-1" /> Add
-                  </Button>
-                </div>
-                <div className="flex-1 overflow-auto p-4">
-                  {interactiveElements.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                      <span className="text-4xl mb-2">✨</span>
-                      <p className="font-medium">No interactive elements yet</p>
-                      <p className="text-xs mt-1 mb-3">
-                        Add timers, polls, buttons, or notes for your
-                        presentation.
-                      </p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="border-gray-700"
-                        onClick={() => {
-                          setEditingElement(null);
-                          setShowInteractiveElementForm(true);
-                        }}
-                      >
-                        <Plus className="h-4 w-4 mr-1" /> Add Interactive
-                        Element
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-2 gap-4">
-                      {interactiveElements.map((element) => (
-                        <div
-                          key={element.id}
-                          className="bg-[#23263A] rounded-xl p-4 flex flex-col gap-2 border border-gray-800 shadow"
-                        >
-                          <div className="flex items-center gap-2 mb-2">
-                            {/* Icon by type */}
-                            {element.type === "timer" && (
-                              <CountdownTimer {...element} size="sm" />
-                            )}
-                            {element.type === "poll" && (
-                              <PollElement {...element} />
-                            )}
-                            {element.type === "button" && (
-                              <InteractiveButton {...element} />
-                            )}
-                            {element.type === "notes" && (
-                              <PresenterNotes {...element} />
-                            )}
-                            <span className="ml-2 font-semibold text-base truncate flex-1">
-                              {getElementDisplayName(element)}
-                            </span>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-7 w-7"
-                              onClick={() => {
-                                const now = new Date();
-                                let title = getElementDisplayName(element);
-                                let content = JSON.stringify(element, null, 2);
-                                setSelectedItem({
-                                  id: element.id,
-                                  title: title,
-                                  type: "announcement", // or a custom type if you want
-                                  content: content,
-                                  createdAt: now,
-                                  updatedAt: now,
-                                });
-                              }}
-                            >
-                              <Play className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          <div className="flex gap-2 mt-2">
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-7 w-7"
-                              onClick={() => {
-                                setEditingElement(element);
-                                setShowInteractiveElementForm(true);
-                              }}
-                            >
-                              <Edit2 className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-7 w-7"
-                              onClick={() => handleRemoveElement(element.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-7 w-7"
-                              onClick={() => handleToggleVisibility(element.id)}
-                            >
-                              {element.isVisible ? (
-                                <Eye className="h-4 w-4" />
-                              ) : (
-                                <EyeOff className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-              {/* Schedule Panel */}
-              <div className="flex-1 rounded-2xl overflow-hidden border border-gray-800 bg-[#1a1a1a] shadow-lg">
-                <ScheduleView />
-              </div>
-              {/* Live Panel */}
-              <div className="flex-1 rounded-2xl overflow-hidden border border-gray-800 bg-[#1a1a1a] shadow-lg">
-                <LivePresentation />
-              </div>
+        </div>
+        {/* Main Content */}
+        <div className="flex-1 bg-background p-8 overflow-y-auto">
+          {renderActiveContent()}
+        </div>
+        {/* Right Panel */}
+        <div className="w-[400px] bg-background border-l border-border flex flex-col gap-6 p-6 h-full min-w-[320px] max-w-[480px]">
+          <div className="bg-card rounded-xl shadow-lg p-6 flex-1 flex flex-col">
+            <h2 className="text-lg font-bold mb-4 tracking-wide text-foreground">
+              PREVIEW
+            </h2>
+            <div className="flex-1 flex flex-col items-stretch justify-stretch">
+              <Preview />
             </div>
           </div>
-        </main>
-      </div>
-
-      {/* Floating Quick Add Button */}
-      <Button
-        className="fixed bottom-8 right-8 z-20 rounded-full h-16 w-16 bg-blue-600 hover:bg-blue-500 shadow-2xl flex items-center justify-center text-white text-3xl"
-        onClick={() => setShowContentForm(true)}
-      >
-        <Plus className="h-10 w-10" />
-      </Button>
-
-      {/* Content Form Modal */}
-      {showContentForm && (
-        <ContentForm onClose={() => setShowContentForm(false)} />
-      )}
-
-      {/* Keyboard Shortcuts Modal (placeholder) */}
-      {showShortcuts && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-[#23263A] rounded-2xl p-8 shadow-2xl border border-gray-700 max-w-lg w-full">
-            <h2 className="text-xl font-bold mb-4">Keyboard Shortcuts</h2>
-            <ul className="space-y-2 text-base">
-              <li>
-                <b>Ctrl + N</b>: New Item
-              </li>
-              <li>
-                <b>Ctrl + S</b>: Save
-              </li>
-              <li>
-                <b>Ctrl + F</b>: Search
-              </li>
-              <li>
-                <b>Ctrl + P</b>: Present
-              </li>
-              <li>
-                <b>Esc</b>: Close Modal
-              </li>
-            </ul>
-            <div className="mt-6 flex justify-end">
-              <Button
-                onClick={() => setShowShortcuts(false)}
-                className="bg-blue-600 hover:bg-blue-500"
-              >
-                Close
+          <div className="bg-card rounded-xl shadow-lg p-6 flex-1 flex flex-col">
+            <h2 className="text-lg font-bold mb-4 tracking-wide text-foreground">
+              SCHEDULE
+            </h2>
+            <div className="flex-1 flex items-center justify-center text-muted-foreground text-base font-medium text-center">
+              Your presentation queue is empty.
+              <br />
+              Add items from the library to get started
+            </div>
+          </div>
+          <div className="bg-card rounded-xl shadow-lg p-6 flex flex-col">
+            <h2 className="text-lg font-bold mb-4 tracking-wide text-foreground">
+              LIVE
+            </h2>
+            <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground text-base font-medium">
+              Nothing is live
+              <Button className="mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-lg font-semibold text-base hover:bg-primary/90 transition-all duration-200 shadow-md">
+                Start Presentation
               </Button>
             </div>
           </div>
         </div>
-      )}
-
-      {showInteractiveElementForm && (
-        <InteractiveElementForm
-          open={showInteractiveElementForm}
-          onAdd={handleAddOrEditElement}
-          onClose={() => {
-            setShowInteractiveElementForm(false);
-            setEditingElement(null);
-          }}
-        />
-      )}
-
-      {/* Notifications/Toasts Placeholder */}
-      {/* You can integrate your toast system here */}
+      </div>
     </div>
   );
+}
+
+function App() {
+  return <MainAppContent />;
 }
 
 export default App;

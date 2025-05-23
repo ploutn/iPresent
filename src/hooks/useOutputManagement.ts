@@ -5,7 +5,7 @@ import { ScreenState } from "../types/screenControl";
 
 export function useOutputManagement() {
   const [screenState, setScreenState] = useState<ScreenState>({
-    isMainScreenActive: false,
+    isMainScreenActive: true,
     isOutputActive: false,
     isBlackout: false,
   });

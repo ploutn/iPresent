@@ -5,67 +5,70 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%; /* Light mode background */
-    --foreground: 222.2 84% 4.9%; /* Light mode text color */
+    /* Light Theme */
+    --background: 0 0% 100%; /* White */
+    --foreground: 224 71.4% 4.1%; /* Dark Blue */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --muted: 220 14.3% 95.9%; /* Light Gray */
+    --muted-foreground: 220 8.9% 46.1%; /* Medium Gray */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%; /* White */
+    --popover-foreground: 224 71.4% 4.1%; /* Dark Blue */
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 224 71.4% 4.1%; /* Dark Blue */
 
-    --secondary: 240 5.9% 10%; /* Updated dark gray color */
-    --secondary-foreground: 0 0% 98%; /* White text */
+    --border: 220 13% 91%; /* Light Gray Border */
+    --input: 220 13% 91%; /* Light Gray Input */
 
-    --muted: 240 5% 90%; /* Light gray */
-    --muted-foreground: 240, 5%, 50%; /* Gray text */
+    --primary: 262.1 83.3% 57.8%; /* Vibrant Purple */
+    --primary-foreground: 0 0% 100%; /* White */
 
-    --accent: 240 5.9% 10%; /* Dark gray */
-    --accent-foreground: 0 0% 98%; /* White text */
+    --secondary: 220 14.3% 95.9%; /* Light Gray */
+    --secondary-foreground: 262.1 83.3% 57.8%; /* Vibrant Purple */
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --accent: 220 14.3% 95.9%; /* Light Gray */
+    --accent-foreground: 262.1 83.3% 57.8%; /* Vibrant Purple */
 
-    --border: 240 5.9% 10%; /* Dark border color */
-    --input: 240 5.9% 10%; /* Dark input color */
-    --ring: 222.2 84% 4.9%;
+    --destructive: 0 72.2% 50.6%; /* Red */
+    --destructive-foreground: 0 0% 100%; /* White */
 
-    --radius: 0.5rem;
-    --preview-background: 0 0% 0%;
+    --ring: 262.1 83.3% 57.8%; /* Vibrant Purple */
+    --radius: 0.75rem; /* Slightly larger radius for a softer look */
+    --preview-background: 224 71.4% 4.1%; /* Dark Blue for preview contrast */
   }
 
   .dark {
-    --background: 240 10% 3.9%; /* Dark mode background */
-    --foreground: 0 0% 98%; /* Dark mode text color */
+    /* Dark Theme */
+    --background: 224 71.4% 10%; /* Dark Blue - Lighter */
+    --foreground: 210 20% 98%; /* Off-White */
 
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
+    --muted: 215 27.9% 16.9%; /* Darker Blue-Gray */
+    --muted-foreground: 217.9 10.6% 64.9%; /* Lighter Gray */
 
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 224 71.4% 4.1%; /* Dark Blue */
+    --popover-foreground: 210 20% 98%; /* Off-White */
 
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
+    --card: 224 71.4% 4.1%; /* Dark Blue */
+    --card-foreground: 210 20% 98%; /* Off-White */
 
-    --secondary: 240 5% 90%; /* Light gray */
-    --secondary-foreground: 240 5.9% 10%; /* Dark gray text */
+    --border: 215 27.9% 16.9%; /* Darker Blue-Gray Border */
+    --input: 215 27.9% 16.9%; /* Darker Blue-Gray Input */
 
-    --muted: 240 5% 90%; /* Light gray */
-    --muted-foreground: 240 5% 64.9%; /* Gray text */
+    --primary: 262.1 83.3% 57.8%; /* Vibrant Purple */
+    --primary-foreground: 210 20% 98%; /* Off-White */
 
-    --accent: 240 5% 90%; /* Light gray */
-    --accent-foreground: 240 5.9% 10%; /* Dark gray text */
+    --secondary: 215 27.9% 16.9%; /* Darker Blue-Gray */
+    --secondary-foreground: 210 20% 98%; /* Off-White */
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --accent: 215 27.9% 16.9%; /* Darker Blue-Gray */
+    --accent-foreground: 210 20% 98%; /* Off-White */
 
-    --border: 240 5.9% 10%; /* Dark border color */
-    --input: 240 5.9% 10%; /* Dark input color */
-    --ring: 240 4.9% 83.9%;
-    --preview-background: 0 0% 0%;
+    --destructive: 0 62.8% 30.6%; /* Darker Red */
+    --destructive-foreground: 210 20% 98%; /* Off-White */
+
+    --ring: 262.1 83.3% 57.8%; /* Vibrant Purple */
+    --preview-background: 0 0% 0%; /* Black for preview contrast */
   }
 }
 

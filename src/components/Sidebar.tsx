@@ -11,6 +11,8 @@ import {
   Settings,
   BookOpen,
   Home,
+  Play,
+  Presentation, // Added Presentation for Presentations page
 } from "lucide-react";
 import { Input } from "./ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -40,6 +42,8 @@ export function Sidebar({ onSelectItem }: SidebarProps) {
         return <FileText className="h-5 w-5" />;
       case "settings":
         return <Settings className="h-5 w-5" />;
+      case "presentations": // Added case for presentations
+        return <Presentation className="h-5 w-5" />;
       default:
         return null;
     }
@@ -58,74 +62,87 @@ export function Sidebar({ onSelectItem }: SidebarProps) {
           className={`w-12 h-12 rounded-xl transition-all duration-200 ${
             activeTab === "home"
               ? "bg-[#3182CE] text-white shadow-md shadow-blue-500/20"
-              : "text-[#A0AEC0] hover:text-white hover:bg-[#2D3748]"
+              : "text-[#A0AEC0] hover:bg-[#2D3748]"
           }`}
           onClick={() => setActiveTab("home")}
         >
-          <Home className="h-6 w-6" />
+          <Home className="h-5 w-5" />
         </Button>
-
         <Button
           variant="ghost"
           size="icon"
           className={`w-12 h-12 rounded-xl transition-all duration-200 ${
             activeTab === "songs"
               ? "bg-[#3182CE] text-white shadow-md shadow-blue-500/20"
-              : "text-[#A0AEC0] hover:text-white hover:bg-[#2D3748]"
+              : "text-[#A0AEC0] hover:bg-[#2D3748]"
           }`}
           onClick={() => setActiveTab("songs")}
         >
-          <Music className="h-6 w-6" />
+          <Music className="h-5 w-5" />
         </Button>
-
         <Button
           variant="ghost"
           size="icon"
           className={`w-12 h-12 rounded-xl transition-all duration-200 ${
             activeTab === "bible"
               ? "bg-[#3182CE] text-white shadow-md shadow-blue-500/20"
-              : "text-[#A0AEC0] hover:text-white hover:bg-[#2D3748]"
+              : "text-[#A0AEC0] hover:bg-[#2D3748]"
           }`}
           onClick={() => setActiveTab("bible")}
         >
-          <BookOpen className="h-6 w-6" />
+          <BookOpen className="h-5 w-5" />
         </Button>
-
         <Button
           variant="ghost"
           size="icon"
           className={`w-12 h-12 rounded-xl transition-all duration-200 ${
             activeTab === "media"
               ? "bg-[#3182CE] text-white shadow-md shadow-blue-500/20"
-              : "text-[#A0AEC0] hover:text-white hover:bg-[#2D3748]"
+              : "text-[#A0AEC0] hover:bg-[#2D3748]"
           }`}
           onClick={() => setActiveTab("media")}
         >
-          <Video className="h-6 w-6" />
+          <Video className="h-5 w-5" />
         </Button>
-
         <Button
           variant="ghost"
           size="icon"
           className={`w-12 h-12 rounded-xl transition-all duration-200 ${
             activeTab === "announcements"
               ? "bg-[#3182CE] text-white shadow-md shadow-blue-500/20"
-              : "text-[#A0AEC0] hover:text-white hover:bg-[#2D3748]"
+              : "text-[#A0AEC0] hover:bg-[#2D3748]"
           }`}
           onClick={() => setActiveTab("announcements")}
         >
-          <FileText className="h-6 w-6" />
+          <FileText className="h-5 w-5" />
         </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={`w-12 h-12 rounded-xl transition-all duration-200 ${
+            activeTab === "settings"
+              ? "bg-[#3182CE] text-white shadow-md shadow-blue-500/20"
+              : "text-[#A0AEC0] hover:bg-[#2D3748]"
+          }`}
+          onClick={() => setActiveTab("settings")}
+        >
+          <Settings className="h-5 w-5" />
+        </Button>
+        {/* Presentations Button Start */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className={`w-12 h-12 rounded-xl transition-all duration-200 ${
+            activeTab === "presentations"
+              ? "bg-[#3182CE] text-white shadow-md shadow-blue-500/20"
+              : "text-[#A0AEC0] hover:bg-[#2D3748]"
+          }`}
+          onClick={() => setActiveTab("presentations")}
+        >
+          <Presentation className="h-5 w-5" />
+        </Button>
+        {/* Presentations Button End */}
       </div>
-
-      <Button
-        variant="ghost"
-        size="icon"
-        className="w-12 h-12 rounded-xl text-[#A0AEC0] hover:text-white hover:bg-[#2D3748] mt-auto transition-all duration-200"
-        onClick={() => setActiveTab("settings")}
-      >
-        <Settings className="h-6 w-6" />
-      </Button>
     </div>
   );
 }

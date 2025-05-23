@@ -1,10 +1,10 @@
 // src/components/AnnouncementTemplates.tsx
 import React from "react";
 import { v4 as uuidv4 } from "uuid";
-import { Card, CardContent } from "./ui/card";
-import { Button } from "./ui/button";
+import { Card, CardContent } from "../ui/card";
+import { Button } from "../ui/button";
 import { LayoutTemplate, FileText, Plus } from "lucide-react";
-import { ScrollArea } from "./ui/scroll-area";
+import { ScrollArea } from "../ui/scroll-area";
 
 export interface AnnouncementTemplate {
   id: string;
@@ -74,10 +74,10 @@ export function AnnouncementTemplates({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <Card
-          className="bg-[#1A202C] border-[#4A5568] hover:border-[#3182CE] transition-colors cursor-pointer flex flex-col items-center justify-center p-6"
+          className="bg-[#1A202C] border-[#4A5568] hover:border-[#3182CE] transition-all duration-200 ease-in-out hover:shadow-lg transform hover:scale-105 cursor-pointer flex flex-col items-center justify-center p-6 rounded-lg"
           onClick={onCreateNew}
         >
-          <Plus className="h-12 w-12 text-[#A0AEC0] mb-2" />
+          <Plus className="h-12 w-12 text-[#A0AEC0] group-hover:text-[#3182CE] mb-2 transition-colors" />
           <p className="text-white font-medium">Create New</p>
           <p className="text-xs text-[#A0AEC0] text-center mt-1">
             Start with a blank announcement
@@ -87,16 +87,16 @@ export function AnnouncementTemplates({
         {defaultAnnouncementTemplates.map((template) => (
           <Card
             key={template.id}
-            className="bg-[#1A202C] border-[#4A5568] hover:border-[#3182CE] transition-colors cursor-pointer"
+            className="bg-[#1A202C] border-[#4A5568] hover:border-[#3182CE] transition-all duration-200 ease-in-out hover:shadow-lg transform hover:scale-105 cursor-pointer rounded-lg flex flex-col justify-between"
             onClick={() => onSelectTemplate(template)}
           >
-            <CardContent className="p-4">
+            <CardContent className="p-4 flex flex-col h-full">
               <div className="flex items-center gap-2 mb-2">
                 <FileText className="h-5 w-5 text-[#3182CE]" />
                 <h4 className="font-medium text-white">{template.name}</h4>
               </div>
               <p className="text-xs text-[#A0AEC0] mb-2">{template.category}</p>
-              <div className="border border-[#4A5568] rounded p-2 bg-[#111827]">
+              <div className="border border-[#4A5568] rounded p-3 bg-[#111827] mt-auto">
                 <p className="text-sm font-medium text-white mb-1">
                   {template.title}
                 </p>

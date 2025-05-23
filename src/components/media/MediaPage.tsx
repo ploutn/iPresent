@@ -1,9 +1,9 @@
-import React from 'react';
-import { ScrollArea } from '../ui/scroll-area';
-import { Button } from '../ui/button';
-import { Image, Video, Plus, Search, Upload } from 'lucide-react';
-import { Input } from '../ui/input';
-import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
+import React from "react";
+import { ScrollArea } from "../ui/scroll-area";
+import { Button } from "../ui/button";
+import { Image, Video, Plus, Search, Upload } from "lucide-react";
+import { Input } from "../ui/input";
+import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 
 export function MediaPage() {
   return (
@@ -16,11 +16,11 @@ export function MediaPage() {
             Upload Media
           </Button>
         </div>
-        
+
         <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#A0AEC0]" />
-          <Input 
-            placeholder="Search media..." 
+          <Input
+            placeholder="Search media..."
             className="pl-9 bg-[#1A202C] border-[#4A5568]"
           />
         </div>

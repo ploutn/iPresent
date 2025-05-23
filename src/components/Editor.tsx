@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { BibleSearch } from "./BibleSearch";
+import { BibleSearch } from "./bible/BibleSearch";
 import { SongLibrary } from "./SongLibrary";
 import { MediaLibrary } from "./MediaLibrary";
 import { SlideEditor } from "./SlideEditor";

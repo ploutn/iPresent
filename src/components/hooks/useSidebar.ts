@@ -6,11 +6,21 @@ interface SidebarState {
     | "home"
     | "songs"
     | "announcements"
+    | "presentations"
     | "bible"
     | "media"
-    | "settings";
+    | "settings"
+    | "schedule-live";
   setActiveTab: (
-    tab: "home" | "songs" | "announcements" | "bible" | "media" | "settings"
+    tab:
+      | "home"
+      | "songs"
+      | "announcements"
+      | "presentations"
+      | "bible"
+      | "media"
+      | "settings"
+      | "schedule-live"
   ) => void;
 }
 

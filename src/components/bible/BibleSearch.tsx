@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Search, Book, ChevronDown, BookOpen, Check } from "lucide-react";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
-import { Card } from "./ui/card";
-import { ScrollArea } from "./ui/scroll-area";
-import { usePresentationStore } from "../store/presentationStore";
-import { useContentStore } from "../stores/useContentStore";
-import { ContentItem, Slide } from "../types";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import { Card } from "../ui/card";
+import { ScrollArea } from "../ui/scroll-area";
+import { usePresentationStore } from "../../store/presentationStore";
+import { useContentStore } from "../../stores/useContentStore";
+import { ContentItem, Slide } from "../../types";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { cn } from "@/lib/utils"; // Assuming utils are in lib
 
 interface BibleVerse {
@@ -78,10 +78,11 @@ interface BibleSearchProps {
 
 export function BibleSearch({ onPassageSelect }: BibleSearchProps) {
   const { addSlide } = usePresentationStore();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedVersion, setSelectedVersion] = useState("KJV");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Remove searchQuery, selectedVersion, isLoading, error, searchInputRef, isVersionPopoverOpen states
+  // const [searchQuery, setSearchQuery] = useState("");
+  // const [selectedVersion, setSelectedVersion] = useState("KJV");
+  // const [isLoading, setIsLoading] = useState(false);
+  // const [error, setError] = useState<string | null>(null);
   const [selectedBook, setSelectedBook] = useState<string | null>(
     BIBLE_BOOKS[0].id
   ); // Default to Genesis
@@ -92,9 +93,9 @@ export function BibleSearch({ onPassageSelect }: BibleSearchProps) {
   const [showAddedFeedback, setShowAddedFeedback] = useState<string | null>(
     null
   );
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  // const searchInputRef = useRef<HTMLInputElement>(null);
   const [bookSearch, setBookSearch] = useState("");
-  const [isVersionPopoverOpen, setIsVersionPopoverOpen] = useState(false);
+  // const [isVersionPopoverOpen, setIsVersionPopoverOpen] = useState(false);
 
   const currentBook = BIBLE_BOOKS.find((b) => b.id === selectedBook);
   const chapters = currentBook
@@ -103,17 +104,18 @@ export function BibleSearch({ onPassageSelect }: BibleSearchProps) {
 
   const fetchVerses = async (book: string, chapter: number) => {
     if (!book || !chapter) return;
-    setIsLoading(true);
-    setError(null);
+    // setIsLoading(true);
+    // setError(null);
     setVerses([]); // Clear previous verses
     try {
       const bookDetails = BIBLE_BOOKS.find((b) => b.id === book);
       if (!bookDetails) throw new Error("Invalid book selected");
 
+      // Use a default version or remove version logic if not needed
+      const version = "kjv"; // Or remove version parameter if API allows
+
       const response = await fetch(
-        `https://bible-api.com/${
-          bookDetails.name
-        } ${chapter}?translation=${selectedVersion.toLowerCase()}`
+        `https://bible-api.com/${bookDetails.name} ${chapter}?translation=${version}`
       );
 
       if (!response.ok) {
@@ -126,7 +128,7 @@ export function BibleSearch({ onPassageSelect }: BibleSearchProps) {
         const fetchedVerses: BibleVerse[] = data.verses.map((v: any) => ({
           reference: `${data.reference}:${v.verse}`,
           text: v.text.replace(/\n/g, " ").trim(), // Clean up verse text
-          version: selectedVersion,
+          version: data.translation_name, // Use version from response
           book: data.book_name,
           chapter: data.chapter,
           verse: v.verse,
@@ -138,16 +140,16 @@ export function BibleSearch({ onPassageSelect }: BibleSearchProps) {
         }
       } else {
         setVerses([]);
-        setError("No verses found for this chapter.");
+        // setError("No verses found for this chapter.");
       }
     } catch (error) {
       console.error("Error fetching Bible verses:", error);
-      setError(
-        error instanceof Error ? error.message : "Failed to fetch verses"
-      );
+      // setError(
+      //   error instanceof Error ? error.message : "Failed to fetch verses"
+      // );
       setVerses([]);
     } finally {
-      setIsLoading(false);
+      // setIsLoading(false);
     }
   };
 
@@ -156,7 +158,7 @@ export function BibleSearch({ onPassageSelect }: BibleSearchProps) {
     if (selectedBook && selectedChapter) {
       fetchVerses(selectedBook, selectedChapter);
     }
-  }, [selectedBook, selectedChapter, selectedVersion]);
+  }, [selectedBook, selectedChapter]); // Removed selectedVersion dependency
 
   const handleAddVerse = (verse: BibleVerse) => {
     const slideContent = `<div class="flex flex-col items-center justify-center h-full bg-gradient-to-b from-slate-900 to-black text-white p-10">
@@ -198,6 +200,15 @@ export function BibleSearch({ onPassageSelect }: BibleSearchProps) {
     setVerses([]); // Clear verses
   };
 
+  // Remove handleSearchSubmit function
+  // const handleSearchSubmit = (e?: React.FormEvent) => {
+  //   e?.preventDefault();
+  //   if (!searchQuery.trim()) return;
+  //   // Implement search logic here if needed, or remove if search is not part of the new design
+  //   console.log("Searching for:", searchQuery, "in", selectedVersion);
+  //   // Example: fetchVerses based on searchQuery
+  // };
+
   const handleVerseSelect = (verse: BibleVerse) => {
     setSelectedVerse(verse.verse);
     if (onPassageSelect) {
@@ -209,43 +220,32 @@ export function BibleSearch({ onPassageSelect }: BibleSearchProps) {
     book.name.toLowerCase().includes(bookSearch.toLowerCase())
   );
 
-  const selectedVersionObj =
-    BIBLE_VERSIONS.find((v) => v.id === selectedVersion) || BIBLE_VERSIONS[0];
-
   return (
+    // Adjust main container for full height and remove padding if needed
     <div className="flex flex-col h-full bg-[#181A20] text-white">
-      {/* Header: Search and Version Selector */}
-      <div className="flex items-center p-3 border-b border-gray-700 bg-[#20222E] gap-2 sticky top-0 z-10">
+      {/* Remove Header Section */}
+      {/* <div className="p-4 border-b border-slate-800 flex items-center gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
             ref={searchInputRef}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search reference (e.g., John 3:16)"
-            className="pl-9 bg-[#2b2d3a] border-gray-600 focus:border-blue-500 focus:ring-blue-500 text-sm h-9 rounded-md"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                // Implement direct search logic if needed
-                console.log("Direct search:", searchQuery);
-              }
-            }}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit()}
+            placeholder="Search Bible (e.g., John 3:16)"
+            className="pl-9 bg-slate-900 border-slate-700 focus:border-blue-500 focus:ring-blue-500"
           />
         </div>
-        <Popover
-          open={isVersionPopoverOpen}
-          onOpenChange={setIsVersionPopoverOpen}
-        >
+
+        <Popover open={isVersionPopoverOpen} onOpenChange={setIsVersionPopoverOpen}>
           <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className="justify-between w-[180px] h-9 text-sm bg-[#2b2d3a] border-gray-600 hover:bg-[#353848]"
-            >
-              {selectedVersionObj.name}
+            <Button variant="outline" className="w-[180px] justify-between">
+              {BIBLE_VERSIONS.find((v) => v.id === selectedVersion)?.name ||
+                "Select Version"}
               <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[200px] p-0 bg-[#2b2d3a] border-gray-600 text-white">
+          <PopoverContent className="w-[200px] p-0 bg-slate-800 border-slate-700">
             <ScrollArea className="h-[200px]">
               {BIBLE_VERSIONS.map((version) => (
                 <div
@@ -254,46 +254,51 @@ export function BibleSearch({ onPassageSelect }: BibleSearchProps) {
                     setSelectedVersion(version.id);
                     setIsVersionPopoverOpen(false);
                   }}
-                  className="flex items-center justify-between p-2 hover:bg-[#353848] cursor-pointer text-sm"
+                  className="flex items-center justify-between p-2 hover:bg-slate-700 cursor-pointer text-sm"
                 >
                   {version.name}
-                  {selectedVersion === version.id && (
-                    <Check className="h-4 w-4 text-blue-400" />
-                  )}
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      selectedVersion === version.id ? "opacity-100" : "opacity-0"
+                    )}
+                  />
                 </div>
               ))}
             </ScrollArea>
           </PopoverContent>
         </Popover>
-      </div>
 
-      {/* Main Content: 3 Columns */}
-      {/* Added gap-2 for spacing between columns and padding */}
-      <div className="flex flex-1 overflow-hidden gap-2 p-2">
-        {/* Column 1: Books - Adjusted width, added rounded corners, border, and overflow handling */}
-        <div className="flex-[0_0_30%] min-w-[200px] border border-gray-700 rounded-lg flex flex-col bg-[#20222E] overflow-hidden">
-          <div className="p-2 border-b border-gray-700 flex-shrink-0">
+        <Button onClick={() => handleSearchSubmit()} disabled={isLoading}>
+          {isLoading ? "Searching..." : "Search"}
+        </Button>
+      </div> */}
+
+      {/* Main Content: 3 Columns - Ensure flex-1 to fill height */}
+      {/* Make sure the parent flex container takes full height */}
+      <div className="flex flex-1 h-full overflow-hidden bg-[#181A20] rounded-lg shadow-lg border border-slate-800">
+        {/* Column 1: Books */}
+        <div className="w-1/4 border-r border-slate-800 flex flex-col bg-[#20222E] h-full overflow-hidden">
+          <div className="p-3 border-b border-slate-800 bg-[#20222E]">
             <Input
-              placeholder="Filter books..."
+              placeholder="Search books..."
               value={bookSearch}
               onChange={(e) => setBookSearch(e.target.value)}
-              className="bg-[#2b2d3a] border-gray-600 focus:border-blue-500 focus:ring-blue-500 text-xs h-8 rounded-md"
+              className="bg-slate-900 border-slate-700 h-8 text-sm focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          <ScrollArea className="flex-1 min-h-0">
-            {" "}
-            {/* Added min-h-0 */}
-            <div className="p-1">
+          <ScrollArea className="flex-1 h-full overflow-y-scroll">
+            <div className="p-0">
               {filteredBooks.map((book) => (
                 <Button
                   key={book.id}
-                  variant="ghost"
+                  variant={selectedBook === book.id ? "default" : "ghost"}
                   onClick={() => handleBookSelect(book.id)}
                   className={cn(
-                    "w-full justify-start h-8 px-2 text-sm font-normal rounded-md transition-colors duration-150",
+                    "w-full justify-start px-4 py-3 text-left text-sm rounded-none transition-colors duration-150",
                     selectedBook === book.id
-                      ? "bg-blue-600 text-white hover:bg-blue-700"
-                      : "text-gray-300 hover:bg-[#353848] hover:text-white"
+                      ? "bg-blue-600 text-white hover:bg-blue-700 shadow-md"
+                      : "hover:bg-slate-700/50 text-slate-300"
                   )}
                 >
                   {book.name}
@@ -302,23 +307,28 @@ export function BibleSearch({ onPassageSelect }: BibleSearchProps) {
             </div>
           </ScrollArea>
         </div>
-
-        {/* Column 2: Chapters - Adjusted width, added rounded corners, border, and overflow handling */}
-        <div className="flex-[0_0_15%] min-w-[100px] border border-gray-700 rounded-lg flex flex-col bg-[#20222E] overflow-hidden">
-          <ScrollArea className="flex-1 min-h-0">
+        {/* Column 2: Chapters */}
+        {/* Ensure column takes full height and handles overflow */}
+        <div className="w-1/6 border-r border-slate-800 flex flex-col bg-[#181A20] h-full overflow-hidden">
+          {" "}
+          {/* Adjusted width and background */}
+          {/* ScrollArea takes remaining space */}
+          <ScrollArea className="flex-1 h-full overflow-y-scroll">
             {" "}
-            {/* Added min-h-0 */}
-            <div className="p-1 grid grid-cols-4 gap-1">
+            {/* Added overflow-y-scroll */} {/* Added flex-1 */}
+            <div className="p-0 grid grid-cols-3 gap-0">
+              {" "}
+              {/* Removed padding and gap */}
               {chapters.map((chapter) => (
                 <Button
                   key={chapter}
                   variant="ghost"
                   onClick={() => handleChapterSelect(chapter)}
                   className={cn(
-                    "h-8 w-full flex items-center justify-center text-sm rounded-md transition-colors duration-150 aspect-square",
+                    "aspect-square justify-center items-center text-base p-3 rounded-none", // Increased padding and font size
                     selectedChapter === chapter
                       ? "bg-blue-600 text-white hover:bg-blue-700"
-                      : "text-gray-300 hover:bg-[#353848] hover:text-white"
+                      : "hover:bg-slate-700/50 text-slate-300"
                   )}
                 >
                   {chapter}
@@ -327,72 +337,85 @@ export function BibleSearch({ onPassageSelect }: BibleSearchProps) {
             </div>
           </ScrollArea>
         </div>
-
-        {/* Column 3: Verses - Added rounded corners, border, and overflow handling */}
-        <div className="flex-1 flex flex-col bg-[#181A20] border border-gray-700 rounded-lg overflow-hidden min-w-0">
-          <ScrollArea className="flex-1 min-h-0">
+        {/* Column 3: Verses */}
+        {/* Ensure column takes full height and handles overflow */}
+        <div className="flex-1 flex flex-col bg-[#181A20] h-full overflow-hidden">
+          {" "}
+          {/* Adjusted background */}
+          {/* ScrollArea takes remaining space */}
+          <ScrollArea className="flex-1 h-full overflow-y-scroll">
             {" "}
-            {/* Added min-h-0 */}
-            <div className="p-4 space-y-1">
-              {isLoading && (
-                <p className="text-gray-400 text-center py-4">
-                  Loading verses...
+            {/* Added overflow-y-scroll */} {/* Added flex-1 */}
+            <div className="p-4">
+              {" "}
+              {/* Keep padding for verses */}
+              {/* Remove loading and error states if not used */}
+              {/* {isLoading && <p className="text-center text-slate-400">Loading verses...</p>}
+              {error && <p className="text-center text-red-500">{error}</p>} */}
+              {verses.length > 0 ? (
+                <ul className="space-y-3">
+                  {verses.map((verse) => (
+                    <li
+                      key={verse.reference}
+                      onClick={() => handleVerseSelect(verse)}
+                      onDoubleClick={() => handleAddVerse(verse)}
+                      className={cn(
+                        "flex items-start gap-3 cursor-pointer p-4 rounded-md transition-colors", // Increased padding
+                        selectedVerse === verse.verse
+                          ? "bg-blue-900/50"
+                          : "hover:bg-slate-800/50",
+                        addedVerses.has(verse.reference) ? "opacity-60" : ""
+                      )}
+                    >
+                      <span className="font-mono text-sm text-slate-500 w-8 text-right pt-1">
+                        {" "}
+                        {/* Increased verse number size */}
+                        {verse.verse}
+                      </span>
+                      <p
+                        className={cn(
+                          "flex-1 text-lg leading-relaxed", // Increased verse text size
+                          selectedVerse === verse.verse
+                            ? "text-white"
+                            : "text-slate-300"
+                        )}
+                      >
+                        {verse.text}
+                      </p>
+                      {/* Optionally keep add button or rely on double-click */}
+                      {/* <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent li onClick
+                          handleAddVerse(verse);
+                        }}
+                        className={cn(
+                          "ml-auto transition-opacity duration-300",
+                          showAddedFeedback === verse.reference
+                            ? "opacity-100 text-green-500"
+                            : "opacity-0 group-hover:opacity-100 text-slate-400 hover:text-white"
+                        )}
+                        disabled={showAddedFeedback === verse.reference}
+                      >
+                        {showAddedFeedback === verse.reference ? (
+                          <Check className="h-4 w-4" />
+                        ) : (
+                          <Plus className="h-4 w-4" />
+                        )}
+                      </Button> */}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-center text-slate-500 mt-10">
+                  Select a book and chapter to view verses.
                 </p>
               )}
-              {error && (
-                <p className="text-red-400 text-center py-4">Error: {error}</p>
-              )}
-              {!isLoading &&
-                !error &&
-                verses.length === 0 &&
-                selectedBook &&
-                selectedChapter && (
-                  <p className="text-gray-500 text-center py-4">
-                    No verses found or chapter not loaded.
-                  </p>
-                )}
-              {verses.map((verse) => (
-                <div
-                  key={verse.reference}
-                  onClick={() => handleVerseSelect(verse)}
-                  onDoubleClick={() => handleAddVerse(verse)}
-                  className={cn(
-                    "flex items-start gap-3 p-2 rounded-md cursor-pointer transition-colors duration-150 group", // Added group for potential hover effects
-                    selectedVerse === verse.verse
-                      ? "bg-blue-900/50 ring-1 ring-blue-600/70" // Enhanced selected state
-                      : "hover:bg-[#23263A]"
-                  )}
-                >
-                  <span className="text-xs font-semibold text-gray-400 w-8 text-right pt-1">
-                    {verse.verse}
-                  </span>
-                  <p className="flex-1 text-sm text-gray-200 leading-relaxed group-hover:text-white transition-colors">
-                    {" "}
-                    {/* Subtle text color change on hover */}
-                    {verse.text}
-                  </p>
-                  {/* Optional: Add button or indicator */}
-                  {addedVerses.has(verse.reference) && (
-                    <Check className="h-4 w-4 text-green-500 ml-auto flex-shrink-0" />
-                  )}
-                </div>
-              ))}
             </div>
           </ScrollArea>
         </div>
       </div>
-
-      {/* Feedback Toast */}
-      {showAddedFeedback && (
-        <div className="fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-in fade-in slide-in-from-bottom-3 duration-300 border border-green-400/50">
-          <div className="flex items-center gap-2">
-            <Check className="h-4 w-4 text-green-200" />
-            <span className="text-sm font-medium">
-              Added {showAddedFeedback} to presentation
-            </span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

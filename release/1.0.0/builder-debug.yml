@@ -4,7 +4,7 @@ arm64:
     - '!dist{,/**/*}'
     - '!release/1.0.0{,/**/*}'
     - dist/**/*
-    - dist-electron/**/*
+    - electron.cjs
     - package.json
     - '!**/*.{iml,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,suo,xproj,cc,d.ts,mk,a,o,forge-meta,pdb}'
     - '!**/._*'
@@ -16,4 +16,5 @@ arm64:
   nodeModuleFilePatterns:
     - '**/*'
     - dist/**/*
-    - dist-electron/**/*
+    - electron.cjs
+    - package.json

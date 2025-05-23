@@ -1,0 +1,43 @@
+/* src/components/stageDisplayElements/AnnouncementBannerDisplay.css */
+@keyframes scrollLeftToRight {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(
+      100%
+    ); /* Adjust based on container width if text is shorter */
+  }
+}
+
+@keyframes scrollRightToLeft {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(
+      -100%
+    ); /* Adjust based on container width if text is shorter */
+  }
+}
+
+/* Optional: if you want the text to appear from one side and disappear on the other completely */
+/* 
+@keyframes scrollLeftToRight {
+  0% {
+    transform: translateX(-100%); 
+  }
+  100% {
+    transform: translateX(calc(100% + 100vw));  Ensures it moves completely off screen if parent is 100% width 
+  }
+}
+
+@keyframes scrollRightToLeft {
+  0% {
+    transform: translateX(calc(100% + 100vw));
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+*/

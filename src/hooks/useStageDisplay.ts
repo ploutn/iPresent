@@ -7,6 +7,7 @@ import {
   StageDisplayElement,
 } from "../types/stageDisplay";
 import { defaultTemplates } from "../components/StageDisplayTemplates";
+// Removed duplicate import: import { v4 as uuidv4 } from "uuid"; // Added import for uuid
 
 export function useStageDisplay() {
   const [stageDisplayConfig, setStageDisplayConfig] =
@@ -118,6 +119,48 @@ export function useStageDisplay() {
     return true;
   };
 
+  // Rename a template
+  const renameTemplate = (templateId: string, newName: string) => {
+    setStageDisplayConfig((prevConfig) => ({
+      ...prevConfig,
+      templates: prevConfig.templates.map((template) =>
+        template.id === templateId ? { ...template, name: newName } : template
+      ),
+    }));
+  };
+
+  // Duplicate a template
+  const duplicateTemplate = (templateId: string): string | undefined => {
+    const templateToDuplicate = stageDisplayConfig.templates.find(
+      (template) => template.id === templateId
+    );
+
+    if (!templateToDuplicate) {
+      console.warn(`Template with id ${templateId} not found for duplication.`);
+      return undefined;
+    }
+
+    const newId = uuidv4(); // Ensure uuidv4 is imported
+    const newTemplate: StageDisplayTemplate = {
+      ...templateToDuplicate,
+      id: newId,
+      name: `${templateToDuplicate.name} (Copy)`,
+      isDefault: false,
+      elements: templateToDuplicate.elements.map((el) => ({
+        ...JSON.parse(JSON.stringify(el)), // Deep copy individual element
+        isVisible: el.isVisible !== false, // Set isVisible to true if undefined or true, false if false
+      })),
+    };
+
+    setStageDisplayConfig((prevConfig) => ({
+      ...prevConfig,
+      templates: [...prevConfig.templates, newTemplate],
+      activeTemplateId: newId,
+    }));
+
+    return newId;
+  };
+
   // Toggle stage display active state
   const toggleStageDisplay = () => {
     setStageDisplayConfig({
@@ -141,6 +184,8 @@ export function useStageDisplay() {
     createTemplate,
     saveTemplate,
     deleteTemplate,
+    renameTemplate, // Added
+    duplicateTemplate, // Added
     toggleStageDisplay,
     setTargetDisplay,
   };
