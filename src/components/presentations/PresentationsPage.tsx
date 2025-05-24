@@ -41,9 +41,8 @@ import {
 } from "../ui/dropdown-menu"; // Assuming path based on ScheduleView.tsx
 import { v4 as uuidv4 } from "uuid";
 import { useContentStore } from "../../stores/useContentStore"; // Added import
-// Potentially import SlideEditorPanel or a similar component later
-// import { SlideEditorPanel } from '../SlideEditorPanel';
-import type { Slide } from "../../types/slide";
+import { SlideManager } from "./SlideManager";
+import type { Slide } from "../../types/index";
 
 // Define the path for the live presentation output window
 const LIVE_PRESENTATION_OUTPUT_PATH = "/live-presentation-output";
@@ -55,10 +54,37 @@ interface Presentation {
   description?: string;
   createdAt: string;
   updatedAt: string;
-  slides: Slide[]; // Store actual slides
+  slides: Slide[]; // Store actual slides with enhanced properties
 }
 
-// Sample presentation data
+// Sample presentation data with enhanced slides
+const createSampleSlide = (
+  id: string,
+  title: string,
+  content: string,
+  order: number
+): Slide => ({
+  id,
+  title,
+  content,
+  type: "announcement",
+  order,
+  transition: {
+    type: "fade",
+    duration: 500,
+    easing: "ease-in-out",
+  },
+  backgroundColor: "#ffffff",
+  textColor: "#000000",
+  fontSize: 24,
+  fontFamily: "Arial",
+  textAlign: "center",
+  duration: 5,
+  notes: "",
+  createdAt: new Date(),
+  updatedAt: new Date(),
+});
+
 const samplePresentations: Presentation[] = [
   {
     id: uuidv4(),
@@ -66,7 +92,20 @@ const samplePresentations: Presentation[] = [
     description: "An introductory presentation for new visitors.",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    slides: [], // Initialize with empty slides array
+    slides: [
+      createSampleSlide(
+        uuidv4(),
+        "Welcome",
+        "Welcome to our church family!",
+        0
+      ),
+      createSampleSlide(
+        uuidv4(),
+        "Our Mission",
+        "Spreading love and hope in our community",
+        1
+      ),
+    ],
   },
   {
     id: uuidv4(),
@@ -74,7 +113,14 @@ const samplePresentations: Presentation[] = [
     description: "A deep dive into the Gospel of John.",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    slides: [], // Initialize with empty slides array
+    slides: [
+      createSampleSlide(
+        uuidv4(),
+        "Introduction",
+        "The Gospel of John - Light of the World",
+        0
+      ),
+    ],
   },
   {
     id: uuidv4(),
@@ -82,7 +128,7 @@ const samplePresentations: Presentation[] = [
     description: "Highlights from our global missions work this past year.",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    slides: [], // Initialize with empty slides array
+    slides: [],
   },
 ];
 
@@ -395,65 +441,14 @@ export function PresentationsPage() {
                 placeholder="Optional: A brief description of the presentation."
               />
             </div>
-            {/* Placeholder for Slide Editor Integration */}
-            {isEditing && selectedPresentation && (
-              <div className="mt-4 p-4 border border-dashed border-[#4A5568] rounded-md">
-                <h3 className="text-lg font-semibold mb-2 text-gray-300">
-                  Slides
-                </h3>
-                {/* Slide list will go here in a future step */}
-                <div className="space-y-2 mb-3 max-h-60 overflow-y-auto pr-2">
-                  {currentSlides.map((slide, index) => (
-                    <div
-                      key={slide.id} // Assuming slide has a unique id
-                      className="flex items-center justify-between p-2 border border-[#4A5568] rounded-md bg-[#2D3748]"
-                    >
-                      <span className="text-sm text-gray-300">
-                        {slide.title || `Slide ${index + 1}`}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          setCurrentSlides(
-                            currentSlides.filter((s) => s.id !== slide.id)
-                          );
-                        }}
-                        className="text-red-400 hover:text-red-300 hover:bg-transparent p-1 h-auto w-auto"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  {currentSlides.length === 0 && (
-                    <p className="text-sm text-center text-gray-500">
-                      No slides yet. Add one below!
-                    </p>
-                  )}
-                </div>
-                <p className="text-center text-xs text-gray-500 mb-3">
-                  ({currentSlides.length} slides)
-                </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const newSlide: Slide = {
-                      id: Date.now(), // Temporary unique ID
-                      title: `Slide ${currentSlides.length + 1}`,
-                      content: "Default slide content.",
-                      type: "announcement", // Default type
-                    };
-                    setCurrentSlides([...currentSlides, newSlide]);
-                  }}
-                  className="w-full border-[#4A5568] hover:bg-[#4A5568] text-gray-300"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add New Slide
-                </Button>
-                {/* <SlideEditorPanel slides={selectedPresentation.slides} onSave={...} /> */}
-              </div>
-            )}
+            {/* Enhanced Slide Management */}
+            <div className="mt-4">
+              <SlideManager
+                slides={currentSlides}
+                onSlidesChange={setCurrentSlides}
+                className=""
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button
