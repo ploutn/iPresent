@@ -46,6 +46,9 @@ const contentTypeIcons = {
   image: Image,
   video: Video,
   presentation: FileText,
+  blank: FileText, // Using FileText as a placeholder icon
+  prayer: MessageSquare, // Using MessageSquare as a placeholder icon
+  bible: FileText, // Using FileText as a placeholder icon
 };
 
 const defaultTransition: SlideTransition = {

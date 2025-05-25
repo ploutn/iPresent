@@ -32,6 +32,7 @@ import {
   FileText,
   Eye,
   Copy, // For Duplicate action
+  Play,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -42,20 +43,14 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { useContentStore } from "../../stores/useContentStore"; // Added import
 import { SlideManager } from "./SlideManager";
-import type { Slide } from "../../types/index";
+import { SlideEditorDialog } from "../slides/SlideEditorDialog";
+import { PresentationPlayer } from "./PresentationPlayer";
+import { usePresentationStore } from "../../store/presentationStore";
+
+import type { Slide, PresentationContentItem } from "../../types/index";
 
 // Define the path for the live presentation output window
 const LIVE_PRESENTATION_OUTPUT_PATH = "/live-presentation-output";
-
-// Define the Presentation type
-interface Presentation {
-  id: string;
-  title: string;
-  description?: string;
-  createdAt: string;
-  updatedAt: string;
-  slides: Slide[]; // Store actual slides with enhanced properties
-}
 
 // Sample presentation data with enhanced slides
 const createSampleSlide = (
@@ -85,13 +80,15 @@ const createSampleSlide = (
   updatedAt: new Date(),
 });
 
-const samplePresentations: Presentation[] = [
+const samplePresentations: PresentationContentItem[] = [
   {
     id: uuidv4(),
     title: "Welcome to Our Church",
+    type: "presentation",
+    content: "An introductory presentation for new visitors.",
     description: "An introductory presentation for new visitors.",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     slides: [
       createSampleSlide(
         uuidv4(),
@@ -106,13 +103,34 @@ const samplePresentations: Presentation[] = [
         1
       ),
     ],
+    settings: {
+      autoAdvance: false,
+      defaultSlideDuration: 5,
+      loopPresentation: false,
+      showSlideNumbers: true,
+      showProgressBar: true,
+      allowRemoteControl: false,
+      backgroundColor: "#ffffff",
+      defaultTransition: { type: "fade", duration: 500 },
+      aspectRatio: "16:9",
+      resolution: { width: 1920, height: 1080 },
+    },
+    metadata: {
+      version: "1.0",
+      totalSlides: 2,
+      estimatedDuration: 10,
+      isPublic: true,
+      isTemplate: false,
+    },
   },
   {
     id: uuidv4(),
     title: "Sermon Series: The Book of John",
+    type: "presentation",
+    content: "A deep dive into the Gospel of John.",
     description: "A deep dive into the Gospel of John.",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     slides: [
       createSampleSlide(
         uuidv4(),
@@ -121,25 +139,67 @@ const samplePresentations: Presentation[] = [
         0
       ),
     ],
+    settings: {
+      autoAdvance: false,
+      defaultSlideDuration: 5,
+      loopPresentation: false,
+      showSlideNumbers: true,
+      showProgressBar: true,
+      allowRemoteControl: false,
+      backgroundColor: "#ffffff",
+      defaultTransition: { type: "fade", duration: 500 },
+      aspectRatio: "16:9",
+      resolution: { width: 1920, height: 1080 },
+    },
+    metadata: {
+      version: "1.0",
+      totalSlides: 1,
+      estimatedDuration: 5,
+      isPublic: true,
+      isTemplate: false,
+    },
   },
   {
     id: uuidv4(),
     title: "Annual Missions Update",
+    type: "presentation",
+    content: "Highlights from our global missions work this past year.",
     description: "Highlights from our global missions work this past year.",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     slides: [],
+    settings: {
+      autoAdvance: false,
+      defaultSlideDuration: 5,
+      loopPresentation: false,
+      showSlideNumbers: true,
+      showProgressBar: true,
+      allowRemoteControl: false,
+      backgroundColor: "#ffffff",
+      defaultTransition: { type: "fade", duration: 500 },
+      aspectRatio: "16:9",
+      resolution: { width: 1920, height: 1080 },
+    },
+    metadata: {
+      version: "1.0",
+      totalSlides: 0,
+      estimatedDuration: 0,
+      isPublic: true,
+      isTemplate: false,
+    },
   },
 ];
 
 export function PresentationsPage() {
   // Navigation is handled by activeTab state
   const { setSelectedItem } = useContentStore(); // Added hook usage
+  const { createPresentation, updatePresentation, duplicatePresentation } =
+    usePresentationStore();
   const [presentations, setPresentations] =
-    useState<Presentation[]>(samplePresentations);
+    useState<PresentationContentItem[]>(samplePresentations);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPresentation, setSelectedPresentation] =
-    useState<Presentation | null>(null);
+    useState<PresentationContentItem | null>(null);
   const [showCreateEditDialog, setShowCreateEditDialog] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentPresentationTitle, setCurrentPresentationTitle] = useState("");
@@ -147,18 +207,90 @@ export function PresentationsPage() {
     useState("");
   const [currentSlides, setCurrentSlides] = useState<Slide[]>([]); // New state for slides
   const [layoutMode, setLayoutMode] = useState<"grid" | "list">("grid");
+  const [showSlideManager, setShowSlideManager] = useState(false);
+  const [showSlideEditor, setShowSlideEditor] = useState(false);
+  const [editingSlide, setEditingSlide] = useState<Slide | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewPresentation, setPreviewPresentation] =
+    useState<PresentationContentItem | null>(null);
 
-  const handleDuplicatePresentation = (presentation: Presentation) => {
-    const newPresentation: Presentation = {
-      ...presentation,
-      id: uuidv4(),
-      title: `${presentation.title} (Copy)`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    setPresentations((prev) => [...prev, newPresentation]);
-    // Optionally, select the new presentation or open its edit dialog
-    // console.log("Duplicated presentation:", newPresentation);
+  const handleViewPresentation = (presentation: PresentationContentItem) => {
+    // Update the selected item in the content store for compatibility
+    setSelectedItem({
+      id: presentation.id,
+      title: presentation.title,
+      type: "presentation" as const,
+      content: presentation.content,
+      tags: [],
+      createdAt: new Date(presentation.createdAt),
+      updatedAt: new Date(presentation.updatedAt),
+    });
+
+    // Open the preview dialog
+    setPreviewPresentation(presentation);
+    setShowPreview(true);
+  };
+
+  // Initialize store with sample data if empty
+  useEffect(() => {
+    if (presentations.length === 0) {
+      // Create sample presentations using the store
+      const welcome = createPresentation(
+        "Welcome to Our Church",
+        "An introductory presentation for new visitors."
+      );
+
+      const sermon = createPresentation(
+        "Sermon Series: The Book of John",
+        "A deep dive into the Gospel of John."
+      );
+
+      const missions = createPresentation(
+        "Annual Missions Update",
+        "Highlights from our global missions work this past year."
+      );
+
+      // Add sample slides to the welcome presentation
+      updatePresentation(welcome.id, {
+        slides: [
+          createSampleSlide(
+            uuidv4(),
+            "Welcome",
+            "Welcome to our church family!",
+            0
+          ),
+          createSampleSlide(
+            uuidv4(),
+            "Our Mission",
+            "Spreading love and hope in our community",
+            1
+          ),
+        ],
+      });
+
+      // Add sample slide to the sermon presentation
+      updatePresentation(sermon.id, {
+        slides: [
+          createSampleSlide(
+            uuidv4(),
+            "Introduction",
+            "The Gospel of John - Light of the World",
+            0
+          ),
+        ],
+      });
+    }
+  }, [presentations.length, createPresentation, updatePresentation]);
+
+  const handleDuplicatePresentation = (
+    presentation: PresentationContentItem
+  ) => {
+    try {
+      const duplicated = duplicatePresentation(presentation.id);
+      console.log("Duplicated presentation:", duplicated);
+    } catch (error) {
+      console.error("Failed to duplicate presentation:", error);
+    }
   };
 
   const handleAddNewPresentation = () => {
@@ -170,7 +302,7 @@ export function PresentationsPage() {
     setShowCreateEditDialog(true);
   };
 
-  const handleEditPresentation = (presentation: Presentation) => {
+  const handleEditPresentation = (presentation: PresentationContentItem) => {
     setIsEditing(true);
     setSelectedPresentation(presentation);
     setCurrentPresentationTitle(presentation.title);
@@ -198,19 +330,19 @@ export function PresentationsPage() {
                 ...p,
                 title: currentPresentationTitle,
                 description: currentPresentationDescription,
-                updatedAt: new Date().toISOString(),
+                updatedAt: new Date(),
                 slides: currentSlides, // Save current slides
               }
             : p
         )
       );
     } else {
-      const newPresentation: Presentation = {
+      const newPresentation: PresentationContentItem = {
         id: uuidv4(),
         title: currentPresentationTitle,
         description: currentPresentationDescription,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
         slides: currentSlides, // Save current slides for new presentation
       };
       setPresentations([...presentations, newPresentation]);
@@ -354,34 +486,7 @@ export function PresentationsPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  // Create a ContentItem-like object from the presentation
-                  const presentationContentItem = {
-                    id: presentation.id,
-                    title: presentation.title,
-                    type: "presentation" as const,
-                    content:
-                      presentation.description || "No description available.",
-                    createdAt: new Date(presentation.createdAt),
-                    updatedAt: new Date(presentation.updatedAt),
-                    slides: presentation.slides,
-                    author: "System",
-                    duration: 0,
-                  };
-                  setSelectedItem(presentationContentItem);
-                  // Open in a new window with specific features for presentation mode
-                  const outputWindow = window.open(
-                    LIVE_PRESENTATION_OUTPUT_PATH,
-                    "iPresentOutput",
-                    "width=1024,height=768,menubar=no,toolbar=no,location=no,status=no"
-                  );
-
-                  // Ensure the window opened successfully
-                  if (outputWindow) {
-                    // Focus the new window
-                    outputWindow.focus();
-                  }
-                }}
+                onClick={() => handleViewPresentation(presentation)}
                 className="border-[#4A5568] hover:bg-[#4A5568]"
               >
                 <Eye className="h-4 w-4 mr-2" /> View
@@ -465,6 +570,59 @@ export function PresentationsPage() {
               {isEditing ? "Save Changes" : "Create Presentation"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Presentation Preview Dialog */}
+      <Dialog open={showPreview} onOpenChange={setShowPreview}>
+        <DialogContent className="max-w-6xl h-[80vh] p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle className="flex items-center gap-2">
+              <Play className="h-5 w-5" />
+              {previewPresentation?.title}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 p-6 pt-0">
+            {previewPresentation && (
+              <PresentationPlayer
+                presentation={{
+                  id: previewPresentation.id,
+                  title: previewPresentation.title,
+                  description: previewPresentation.description,
+                  slides: previewPresentation.slides,
+                  tags: [],
+                  createdAt: new Date(previewPresentation.createdAt),
+                  updatedAt: new Date(previewPresentation.updatedAt),
+                  type: "presentation", // Explicitly set type
+                  settings: {
+                    // Add placeholder settings
+                    autoAdvance: false,
+                    defaultSlideDuration: 5,
+                    loopPresentation: false,
+                    showSlideNumbers: false,
+                    showProgressBar: false,
+                    allowRemoteControl: false,
+                    backgroundColor: "#000000",
+                    defaultTransition: { type: "none", duration: 0 },
+                    aspectRatio: "16:9",
+                    resolution: { width: 1920, height: 1080 },
+                  },
+                  metadata: {
+                    // Add placeholder metadata
+                    version: "1.0",
+                    totalSlides: previewPresentation.slides.length,
+                    estimatedDuration: previewPresentation.slides.reduce(
+                      (sum, slide) => sum + (slide.duration || 0),
+                      0
+                    ),
+                    isPublic: false,
+                    isTemplate: false,
+                  },
+                }}
+                className="h-full"
+              />
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
