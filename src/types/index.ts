@@ -66,6 +66,51 @@ export interface ScheduledItem {
   transition?: "fade" | "slide" | "zoom";
 }
 
+export interface SlideMediaElement {
+  id: string;
+  mediaId: string; // Reference to MediaItem.id
+  type: "image" | "video" | "audio";
+  layer: number; // Z-index for layering (0 = background, higher = foreground)
+  position: {
+    x: number; // X position as percentage (0-100)
+    y: number; // Y position as percentage (0-100)
+    width: number; // Width as percentage (0-100)
+    height: number; // Height as percentage (0-100)
+  };
+  opacity?: number; // 0-1, default 1
+  rotation?: number; // Rotation in degrees, default 0
+  scale?: number; // Scale factor, default 1
+  cropArea?: {
+    x: number; // Crop start X as percentage
+    y: number; // Crop start Y as percentage
+    width: number; // Crop width as percentage
+    height: number; // Crop height as percentage
+  };
+  effects?: {
+    blur?: number; // Blur radius in pixels
+    brightness?: number; // 0-2, default 1
+    contrast?: number; // 0-2, default 1
+    saturation?: number; // 0-2, default 1
+    sepia?: number; // 0-1, default 0
+    grayscale?: number; // 0-1, default 0
+  };
+  animation?: {
+    type: "none" | "fade-in" | "slide-in" | "zoom-in" | "bounce";
+    duration: number; // Animation duration in milliseconds
+    delay?: number; // Animation delay in milliseconds
+    direction?: "left" | "right" | "up" | "down";
+  };
+  playback?: {
+    autoplay?: boolean; // For video/audio
+    loop?: boolean; // For video/audio
+    volume?: number; // 0-1, for audio/video
+    startTime?: number; // Start time in seconds for video/audio
+    endTime?: number; // End time in seconds for video/audio
+  };
+  visible?: boolean; // Whether the element is visible, default true
+  locked?: boolean; // Whether the element is locked from editing, default false
+}
+
 export interface Slide {
   id: string; // Changed to string for better UUID support
   title: string;
@@ -75,7 +120,7 @@ export interface Slide {
   duration?: number; // Duration in seconds for auto-advance
   transition?: SlideTransition;
   backgroundColor?: string;
-  backgroundImage?: string;
+  backgroundImage?: string; // Kept for backward compatibility
   textColor?: string;
   fontSize?: number;
   fontFamily?: string;
@@ -84,6 +129,22 @@ export interface Slide {
   notes?: string; // Speaker notes
   createdAt: Date;
   updatedAt: Date;
+  // New media support properties
+  mediaElements?: SlideMediaElement[]; // Array of media elements on this slide
+  backgroundMedia?: SlideMediaElement; // Dedicated background media (replaces backgroundImage)
+  overlaySettings?: {
+    textOverlay?: boolean; // Whether text content overlays media
+    textBackground?: {
+      enabled: boolean;
+      color?: string;
+      opacity?: number; // 0-1
+      blur?: number; // Background blur for text readability
+    };
+    safeArea?: {
+      enabled: boolean;
+      padding: number; // Padding percentage for text safe area
+    };
+  };
 }
 
 export interface SlideTransition {

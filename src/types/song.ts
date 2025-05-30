@@ -1,5 +1,7 @@
 import { SongSlide } from "./index";
 
+import { SlideMediaElement } from "./index";
+
 export interface SongBook {
   id: string;
   name: string;
@@ -19,6 +21,7 @@ export interface Song {
   content: string; // For compatibility with the existing type
   songBookId?: string | null; // Added songBookId
   slides: SongSlide[];
+  mediaElements?: SlideMediaElement[];
 }
 
 export interface EditSongFormData {

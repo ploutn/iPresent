@@ -1,14 +1,45 @@
 import React, { useState } from "react";
 import { Sidebar } from "./components/Sidebar";
-import { HomePage } from "./components/home/HomePage";
-import SongsPage from "./components/songs/SongsPage";
-import { MediaPage } from "./components/media/MediaPage";
-import { SettingsPage } from "./components/settings/SettingsPage";
-import { BiblePage } from "./components/bible/BiblePage";
-import { AnnouncementsPage } from "./components/announcements/AnnouncementsPage";
-import { PresentationsPage } from "./components/presentations/PresentationsPage";
-import { PresentationViewPage } from "./pages/PresentationViewPage";
-import OutputWindow from "./pages/OutputWindow"; // Added import for OutputWindow
+import { Suspense, lazy } from "react";
+
+// Lazy load main page components for better code splitting
+const HomePage = lazy(() =>
+  import("./components/home/HomePage").then((module) => ({
+    default: module.HomePage,
+  }))
+);
+const SongsPage = lazy(() => import("./components/songs/SongsPage"));
+const MediaPage = lazy(() =>
+  import("./components/media/MediaPage").then((module) => ({
+    default: module.MediaPage,
+  }))
+);
+const SettingsPage = lazy(() =>
+  import("./components/settings/SettingsPage").then((module) => ({
+    default: module.SettingsPage,
+  }))
+);
+const BiblePage = lazy(() =>
+  import("./components/bible/BiblePage").then((module) => ({
+    default: module.BiblePage,
+  }))
+);
+const AnnouncementsPage = lazy(() =>
+  import("./components/announcements/AnnouncementsPage").then((module) => ({
+    default: module.AnnouncementsPage,
+  }))
+);
+const PresentationsPage = lazy(() =>
+  import("./components/presentations/PresentationsPage").then((module) => ({
+    default: module.PresentationsPage,
+  }))
+);
+const PresentationViewPage = lazy(() =>
+  import("./pages/PresentationViewPage").then((module) => ({
+    default: module.PresentationViewPage,
+  }))
+);
+const OutputWindow = lazy(() => import("./pages/OutputWindow")); // Added import for OutputWindow
 import { useSidebar } from "./components/hooks/useSidebar";
 import { ContentForm } from "./components/ContentForm";
 import { useContentStore } from "./stores/useContentStore";
@@ -48,6 +79,17 @@ import { InteractiveButton } from "./components/interactive/InteractiveButton";
 import { PresenterNotes } from "./components/interactive/PresenterNotes";
 import { InteractiveElementForm } from "./components/interactive/InteractiveElementForm";
 import { AnyInteractiveElement } from "./types/interactive";
+import { MediaCacheProvider } from "./components/media/MediaCacheProvider";
+
+// Loading component for lazy-loaded pages
+const PageLoader = () => (
+  <div className="flex items-center justify-center h-full w-full">
+    <div className="flex flex-col items-center space-y-4">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <p className="text-sm text-muted-foreground">Loading...</p>
+    </div>
+  </div>
+);
 
 function MainAppContent() {
   const { activeTab, setActiveTab } = useSidebar();
@@ -70,53 +112,45 @@ function MainAppContent() {
     setActiveTab("home");
   }
 
-  // Function to render the active page content
+  // Function to render the active page content with Suspense
   const renderActiveContent = () => {
-    switch (activeTab) {
-      case "home":
-        return <HomePage />;
-      case "songs":
-        return <SongsPage />;
-      case "bible":
-        return <BiblePage />;
-      case "media":
-        return <MediaPage />;
-      case "announcements":
-        return <AnnouncementsPage />;
-      case "presentations":
-        return <PresentationsPage />;
-        return (
-          <h1
-            style={{
-              backgroundColor: "pink",
-              color: "blue",
-              fontSize: "2rem",
-              padding: "1rem",
-            }}
-          >
-            DEBUG: APP.TSX - PRESENTATIONS CASE - IS THIS VISIBLE?
-          </h1>
-        );
-      case "settings":
-        return <SettingsPage />;
-      case "schedule-live":
-        return (
-          <div className="flex h-full w-full gap-4">
-            <div className="flex-1 min-w-0 border-r border-gray-800 pr-2 flex items-center justify-center">
-              <div className="aspect-[16/9] w-full max-w-full flex items-center justify-center">
-                <ScheduleView />
+    const content = (() => {
+      switch (activeTab) {
+        case "home":
+          return <HomePage />;
+        case "songs":
+          return <SongsPage />;
+        case "bible":
+          return <BiblePage />;
+        case "media":
+          return <MediaPage />;
+        case "announcements":
+          return <AnnouncementsPage />;
+        case "presentations":
+          return <PresentationsPage />;
+        case "settings":
+          return <SettingsPage />;
+        case "schedule-live":
+          return (
+            <div className="flex h-full w-full gap-4">
+              <div className="flex-1 min-w-0 border-r border-gray-800 pr-2 flex items-center justify-center">
+                <div className="aspect-[16/9] w-full max-w-full flex items-center justify-center">
+                  <ScheduleView />
+                </div>
+              </div>
+              <div className="flex-1 min-w-0 pl-2 flex items-center justify-center">
+                <div className="aspect-[16/9] w-full max-w-full flex items-center justify-center">
+                  <LivePresentation />
+                </div>
               </div>
             </div>
-            <div className="flex-1 min-w-0 pl-2 flex items-center justify-center">
-              <div className="aspect-[16/9] w-full max-w-full flex items-center justify-center">
-                <LivePresentation />
-              </div>
-            </div>
-          </div>
-        );
-      default:
-        return <HomePage />;
-    }
+          );
+        default:
+          return <HomePage />;
+      }
+    })();
+
+    return <Suspense fallback={<PageLoader />}>{content}</Suspense>;
   };
 
   // Theme toggle handler
@@ -300,7 +334,11 @@ function MainAppContent() {
 }
 
 function App() {
-  return <MainAppContent />;
+  return (
+    <MediaCacheProvider>
+      <MainAppContent />
+    </MediaCacheProvider>
+  );
 }
 
 export default App;

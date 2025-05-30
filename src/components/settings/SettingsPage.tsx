@@ -53,6 +53,7 @@ import { useContentStore } from "../../stores/useContentStore";
 import { useUISettingsStore } from "../../stores/useUISettingsStore";
 import { Slide } from "../../types";
 import { DisplayDevice } from "../../types/outputManagement";
+import { MediaCacheStats } from "../media/MediaCacheStats";
 
 export function SettingsPage(): JSX.Element {
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
@@ -144,6 +145,7 @@ export function SettingsPage(): JSX.Element {
     },
     { id: "users", label: "Users", icon: <Users className="h-5 w-5" /> },
     { id: "data", label: "Data", icon: <Database className="h-5 w-5" /> },
+    { id: "cache", label: "Cache", icon: <Database className="h-5 w-5" /> },
   ];
 
   const renderContent = () => {
@@ -473,6 +475,12 @@ export function SettingsPage(): JSX.Element {
             <p className="text-xs text-[#A0AEC0] pl-7">
               Manage application data and backups
             </p>
+          </div>
+        );
+      case "cache":
+        return (
+          <div className="space-y-4">
+            <MediaCacheStats />
           </div>
         );
       case "stage-display":

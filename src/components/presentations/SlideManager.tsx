@@ -1,38 +1,52 @@
 import React, { useState } from "react";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Textarea } from "../ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "../ui/dialog";
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Plus,
   Edit,
   Trash2,
-  ChevronUp,
-  ChevronDown,
   Copy,
-  FileText,
+  MoveUp,
+  MoveDown,
+  Music,
+  Megaphone,
   Image,
   Video,
-  Music,
-  MessageSquare,
+  FileText,
+  ImageIcon,
+  VideoIcon,
+  VolumeX,
 } from "lucide-react";
+import { Slide, SlideTransition, SlideMediaElement } from "@/types";
+import { usePresentationStore } from "@/stores/presentationStore";
+import { lazy, Suspense } from "react";
+
+// Lazy load MediaSelector for better performance
+const MediaSelector = lazy(() =>
+  import("@/components/media/MediaSelector").then((module) => ({
+    default: module.MediaSelector,
+  }))
+);
+import { MediaItem } from "@/types";
 import { v4 as uuidv4 } from "uuid";
-import type { Slide, SlideTransition, ContentType } from "../../types/index";
 
 interface SlideManagerProps {
   slides: Slide[];
@@ -42,13 +56,10 @@ interface SlideManagerProps {
 
 const contentTypeIcons = {
   song: Music,
-  announcement: MessageSquare,
+  announcement: Megaphone,
   image: Image,
   video: Video,
   presentation: FileText,
-  blank: FileText, // Using FileText as a placeholder icon
-  prayer: MessageSquare, // Using MessageSquare as a placeholder icon
-  bible: FileText, // Using FileText as a placeholder icon
 };
 
 const defaultTransition: SlideTransition = {
@@ -61,7 +72,7 @@ const getDefaultSlide = (order: number): Slide => ({
   id: uuidv4(),
   title: `Slide ${order + 1}`,
   content: "Enter your slide content here...",
-  type: "announcement" as ContentType,
+  type: "announcement",
   order,
   transition: defaultTransition,
   backgroundColor: "#ffffff",
@@ -71,6 +82,7 @@ const getDefaultSlide = (order: number): Slide => ({
   textAlign: "center",
   duration: 5,
   notes: "",
+  mediaElements: [],
   createdAt: new Date(),
   updatedAt: new Date(),
 });
@@ -84,6 +96,7 @@ export function SlideManager({
   const [showSlideEditor, setShowSlideEditor] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingSlide, setEditingSlide] = useState<Slide | null>(null);
+  const [showMediaSelector, setShowMediaSelector] = useState(false);
 
   const handleAddSlide = () => {
     const newSlide = getDefaultSlide(slides.length);
@@ -187,6 +200,59 @@ export function SlideManager({
         ...editingSlide.transition,
         [property]: value,
       } as SlideTransition,
+    });
+  };
+
+  const handleMediaSelect = (selectedMedia: MediaItem[]) => {
+    if (!editingSlide) return;
+
+    const newMediaElements: SlideMediaElement[] = selectedMedia.map(
+      (media, index) => ({
+        id: uuidv4(),
+        mediaId: media.id,
+        name: media.name,
+        type: media.type,
+        url: media.url,
+        layer: (editingSlide.mediaElements?.length || 0) + index + 1,
+        position: { x: 0, y: 0 },
+        size:
+          media.type === "image" || media.type === "video"
+            ? { width: 400, height: 300 }
+            : undefined,
+        opacity: 1,
+        visible: true,
+        playback:
+          media.type === "video" || media.type === "audio"
+            ? {
+                autoplay: false,
+                loop: false,
+                volume: 1,
+                startTime: 0,
+              }
+            : undefined,
+      })
+    );
+
+    setEditingSlide({
+      ...editingSlide,
+      mediaElements: [
+        ...(editingSlide.mediaElements || []),
+        ...newMediaElements,
+      ],
+    });
+
+    setShowMediaSelector(false);
+  };
+
+  const removeMediaElement = (index: number) => {
+    if (!editingSlide || !editingSlide.mediaElements) return;
+
+    const updatedMediaElements = editingSlide.mediaElements.filter(
+      (_, i) => i !== index
+    );
+    setEditingSlide({
+      ...editingSlide,
+      mediaElements: updatedMediaElements,
     });
   };
 
@@ -354,6 +420,84 @@ export function SlideManager({
                   className="bg-[#2D3748] border-[#4A5568] min-h-[120px]"
                   placeholder="Enter your slide content..."
                 />
+              </div>
+
+              {/* Media Elements */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>Media Elements</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowMediaSelector(true)}
+                    className="border-[#4A5568] hover:bg-[#4A5568]"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Media
+                  </Button>
+                </div>
+
+                {editingSlide.mediaElements &&
+                  editingSlide.mediaElements.length > 0 && (
+                    <div className="space-y-2">
+                      {editingSlide.mediaElements.map((mediaElement, index) => (
+                        <Card
+                          key={index}
+                          className="bg-[#2D3748] border-[#4A5568]"
+                        >
+                          <CardContent className="p-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-3">
+                                {mediaElement.type === "image" && (
+                                  <ImageIcon className="w-5 h-5 text-blue-400" />
+                                )}
+                                {mediaElement.type === "video" && (
+                                  <VideoIcon className="w-5 h-5 text-green-400" />
+                                )}
+                                {mediaElement.type === "audio" && (
+                                  <VolumeX className="w-5 h-5 text-purple-400" />
+                                )}
+                                <div>
+                                  <p className="text-sm font-medium text-white">
+                                    {mediaElement.name}
+                                  </p>
+                                  <div className="flex items-center space-x-2 text-xs text-gray-400">
+                                    <Badge
+                                      variant="secondary"
+                                      className="text-xs"
+                                    >
+                                      {mediaElement.type}
+                                    </Badge>
+                                    <span>Layer {mediaElement.layer}</span>
+                                    <span>
+                                      ({mediaElement.position.x},{" "}
+                                      {mediaElement.position.y})
+                                    </span>
+                                    {mediaElement.size && (
+                                      <span>
+                                        {mediaElement.size.width}×
+                                        {mediaElement.size.height}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeMediaElement(index)}
+                                className="text-red-400 hover:text-red-300 hover:bg-red-400/10"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
               </div>
 
               {/* Styling Properties */}
@@ -525,6 +669,28 @@ export function SlideManager({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Media Selector Dialog */}
+      <Suspense
+        fallback={
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-background rounded-lg p-6 flex flex-col items-center space-y-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <p className="text-sm text-muted-foreground">
+                Loading Media Selector...
+              </p>
+            </div>
+          </div>
+        }
+      >
+        <MediaSelector
+          isOpen={showMediaSelector}
+          onClose={() => setShowMediaSelector(false)}
+          onSelect={handleMediaSelect}
+          allowMultiple={true}
+          restrictToTypes={["image", "video", "audio"]}
+        />
+      </Suspense>
     </div>
   );
 }

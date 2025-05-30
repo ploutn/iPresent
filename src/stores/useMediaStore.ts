@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { v4 as uuidv4 } from "uuid";
 
 // Enhanced Media Types
@@ -322,7 +322,6 @@ export const useMediaStore = create<MediaStore>()(
             status: validation.valid ? "uploading" : "error",
             error: validation.error,
           });
-
           if (!validation.valid) {
             continue;
           }
@@ -630,6 +629,14 @@ export const useMediaStore = create<MediaStore>()(
         viewMode: state.viewMode,
         sortBy: state.sortBy,
         sortOrder: state.sortOrder,
+      }),
+      storage: createJSONStorage(() => localStorage, {
+        reviver: (key: string, value: any) => {
+          if (key === "createdAt" || key === "updatedAt") {
+            return new Date(value);
+          }
+          return value;
+        },
       }),
     }
   )

@@ -14,7 +14,11 @@ import {
   Clock,
 } from "lucide-react";
 import { usePresentationStore } from "../../store/presentationStore";
-import type { PresentationContentItem, Slide } from "../../types";
+import type {
+  PresentationContentItem,
+  Slide,
+  SlideMediaElement,
+} from "../../types";
 
 interface PresentationPlayerProps {
   presentation: PresentationContentItem;
@@ -187,6 +191,7 @@ export function PresentationPlayer({
   };
 
   const getSlideBackground = (slide: Slide) => {
+    // If there's a background image specified directly on the slide, use it
     if (slide.backgroundImage) {
       return {
         backgroundImage: `url(${slide.backgroundImage})`,
@@ -194,9 +199,63 @@ export function PresentationPlayer({
         backgroundPosition: "center",
       };
     }
+    // Otherwise, use the background color
     return {
       backgroundColor: slide.backgroundColor || "#ffffff",
     };
+  };
+
+  const renderMediaElements = (mediaElements: SlideMediaElement[]) => {
+    return mediaElements
+      .sort((a, b) => a.layer - b.layer)
+      .map((media) => {
+        const style: React.CSSProperties = {
+          position: "absolute",
+          left: `${media.position.x}%`,
+          top: `${media.position.y}%`,
+          width: media.size ? `${media.size.width}%` : "auto",
+          height: media.size ? `${media.size.height}%` : "auto",
+          opacity: media.opacity,
+          zIndex: media.layer,
+          objectFit: "contain",
+        };
+
+        if (media.type === "image") {
+          return (
+            <img
+              key={media.id}
+              src={media.url}
+              alt={media.name}
+              style={style}
+            />
+          );
+        } else if (media.type === "video") {
+          return (
+            <video
+              key={media.id}
+              src={media.url}
+              style={style}
+              autoPlay={media.playback?.autoplay}
+              loop={media.playback?.loop}
+              muted={media.playback?.volume === 0}
+              volume={media.playback?.volume}
+            />
+          );
+        } else if (media.type === "audio") {
+          return (
+            <audio
+              key={media.id}
+              src={media.url}
+              autoPlay={media.playback?.autoplay}
+              loop={media.playback?.loop}
+              muted={media.playback?.volume === 0}
+              volume={media.playback?.volume}
+              style={{ display: "none" }} // Audio elements are not visible
+            />
+          );
+        }
+        return null;
+      });
   };
 
   const getSlideTextStyle = (slide: Slide) => {
@@ -223,11 +282,13 @@ export function PresentationPlayer({
       >
         {currentSlide ? (
           <div
-            className="w-full h-full flex items-center justify-center p-8"
+            className="w-full h-full flex items-center justify-center p-8 overflow-hidden"
             style={getSlideBackground(currentSlide)}
           >
+            {currentSlide.mediaElements &&
+              renderMediaElements(currentSlide.mediaElements)}
             <div
-              className="max-w-4xl text-center"
+              className="max-w-4xl text-center relative z-10"
               style={getSlideTextStyle(currentSlide)}
             >
               <h1 className="text-4xl md:text-6xl font-bold mb-6">
