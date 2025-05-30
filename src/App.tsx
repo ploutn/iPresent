@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Sidebar } from "./components/Sidebar";
+import { NavigationHeader } from "./components/navigation/NavigationHeader";
 import { Suspense, lazy } from "react";
 
 // Lazy load main page components for better code splitting
@@ -287,14 +288,43 @@ function MainAppContent() {
           </TooltipProvider>
         </div>
       </header>
+      {/* Navigation Header with Breadcrumbs and Quick Access */}
+      <NavigationHeader
+        onSearch={(query) => {
+          // Handle global search
+          console.log("Global search:", query);
+        }}
+        contextualActions={
+          <div className="flex items-center gap-2">
+            {activeTab === "presentations" && (
+              <Button size="sm" variant="outline">
+                <Plus className="h-4 w-4 mr-1" />
+                New Presentation
+              </Button>
+            )}
+            {activeTab === "songs" && (
+              <Button size="sm" variant="outline">
+                <Plus className="h-4 w-4 mr-1" />
+                Add Song
+              </Button>
+            )}
+            {activeTab === "media" && (
+              <Button size="sm" variant="outline">
+                <Plus className="h-4 w-4 mr-1" />
+                Import Media
+              </Button>
+            )}
+          </div>
+        }
+      />
       <div className="flex flex-1 min-h-0">
         {/* Sidebar */}
         <div className="w-[100px] bg-card border-r border-border flex flex-col items-center py-6 h-full overflow-y-auto">
           <Sidebar onSelectItem={setSelectedItem} />
         </div>
         {/* Main Content */}
-        <div className="flex-1 bg-background p-8 overflow-y-auto">
-          {renderActiveContent()}
+        <div className="flex-1 bg-background overflow-y-auto">
+          <div className="p-6">{renderActiveContent()}</div>
         </div>
         {/* Right Panel */}
         <div className="w-[400px] bg-background border-l border-border flex flex-col gap-6 p-6 h-full min-w-[320px] max-w-[480px]">
