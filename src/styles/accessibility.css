@@ -1,0 +1,377 @@
+/**
+ * Accessibility-focused CSS styles for iPresent
+ * Provides visual and functional accessibility enhancements
+ */
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip links */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--background);
+  color: var(--foreground);
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 4px;
+  border: 2px solid var(--border);
+  z-index: 1000;
+  font-weight: 600;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Enhanced focus indicators */
+.focus-visible {
+  outline: 2px solid var(--ring) !important;
+  outline-offset: 2px !important;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .button {
+    border: 2px solid currentColor;
+  }
+
+  .card {
+    border: 2px solid var(--border);
+  }
+
+  .input {
+    border: 2px solid var(--border);
+  }
+
+  .link {
+    text-decoration: underline;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Focus trap container */
+.focus-trap {
+  position: relative;
+}
+
+.focus-trap:focus-within {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Keyboard navigation indicators */
+.keyboard-nav-active .nav-item:focus {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.keyboard-nav-active .menu-item:focus {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+/* ARIA live regions */
+.aria-live {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Touch target sizing for accessibility */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Error states with better contrast */
+.error-state {
+  border-color: var(--destructive) !important;
+  color: var(--destructive) !important;
+}
+
+.error-state:focus {
+  outline-color: var(--destructive) !important;
+}
+
+/* Success states */
+.success-state {
+  border-color: var(--success) !important;
+  color: var(--success) !important;
+}
+
+/* Warning states */
+.warning-state {
+  border-color: var(--warning) !important;
+  color: var(--warning) !important;
+}
+
+/* Interactive element states */
+.interactive:hover {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.interactive:focus {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.interactive:active {
+  transform: scale(0.98);
+}
+
+/* Disabled state styling */
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Loading state */
+.loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.loading::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading::after {
+    animation: none;
+  }
+}
+
+/* Tooltip accessibility */
+.tooltip {
+  position: relative;
+}
+
+.tooltip[aria-describedby] {
+  cursor: help;
+}
+
+/* Modal and dialog accessibility */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 50;
+}
+
+.modal-content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--background);
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-content:focus {
+  outline: none;
+}
+
+/* Form accessibility */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-label {
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.form-label.required::after {
+  content: " *";
+  color: var(--destructive);
+}
+
+.form-error {
+  color: var(--destructive);
+  font-size: 0.875rem;
+}
+
+.form-help {
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+}
+
+/* Table accessibility */
+.table-container {
+  overflow-x: auto;
+}
+
+.table th {
+  position: sticky;
+  top: 0;
+  background: var(--background);
+  font-weight: 600;
+}
+
+.table th[aria-sort] {
+  cursor: pointer;
+}
+
+.table th[aria-sort]:hover {
+  background-color: var(--accent);
+}
+
+.table th[aria-sort="ascending"]::after {
+  content: " ↑";
+}
+
+.table th[aria-sort="descending"]::after {
+  content: " ↓";
+}
+
+/* Navigation accessibility */
+.nav-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-breadcrumb-separator {
+  color: var(--muted-foreground);
+}
+
+.nav-breadcrumb-link:focus {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Status indicators */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-success {
+  background-color: var(--success-bg);
+  color: var(--success);
+}
+
+.status-warning {
+  background-color: var(--warning-bg);
+  color: var(--warning);
+}
+
+.status-error {
+  background-color: var(--destructive-bg);
+  color: var(--destructive);
+}
+
+/* Progress indicators */
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: var(--secondary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: var(--primary);
+  transition: width 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-fill {
+    transition: none;
+  }
+}
+
+/* Color contrast utilities */
+.high-contrast {
+  filter: contrast(150%);
+}
+
+.low-contrast {
+  filter: contrast(75%);
+}
+
+/* Text sizing utilities */
+.text-large {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+/* Spacing utilities for touch targets */
+.touch-spacing {
+  margin: 4px;
+}
+
+.touch-spacing-lg {
+  margin: 8px;
+}

@@ -45,6 +45,22 @@ export interface Song extends ContentItem {
   songBookId?: string | null; // Consolidated from src/types/song.ts
 }
 
+export interface ImageItem {
+  id: string;
+  url: string; // URL or path to the image
+  altText?: string; // Alt text for accessibility
+  caption?: string;
+}
+
+export interface VideoItem {
+  id: string;
+  url: string; // URL or path to the video
+  title: string;
+  description?: string;
+}
+
+export type MediaItem = Media | ImageItem | VideoItem;
+
 export interface Media extends ContentItem {
   type: "image" | "video";
   url: string;
@@ -66,11 +82,49 @@ export interface ScheduledItem {
   transition?: "fade" | "slide" | "zoom";
 }
 
-export interface SlideMediaElement {
-  id: string;
-  mediaId: string; // Reference to MediaItem.id
+export interface Slide {
+  id: string; // Changed to string for better UUID support
+  title: string;
+  content: string;
+  type: ContentType;
+  thumbnail?: string;
+  duration?: number; // Duration in seconds for auto-advance
+  transition?: SlideTransition;
+  backgroundColor?: string;
+  backgroundImage?: string; // Kept for backward compatibility
+  textColor?: string;
+  fontSize?: number;
+  fontFamily?: string;
+  textAlign?: "left" | "center" | "right" | "justify";
+  order: number; // For slide ordering
+  notes?: string; // Speaker notes
+  createdAt: Date;
+  updatedAt: Date;
+  // New media support properties
+  mediaElements?: MediaElement[]; // Array of media elements on this slide
+  backgroundMedia?: MediaElement; // Dedicated background media (replaces backgroundImage)
+  overlaySettings?: {
+    textOverlay?: boolean; // Whether text content overlays media
+    textBackground?: {
+      enabled: boolean;
+      color?: string;
+      opacity?: number; // 0-1
+      blur?: number; // Background blur for text readability
+    };
+    safeArea?: {
+      enabled: boolean;
+      padding: number; // Padding percentage for text safe area
+    };
+  };
+}
+
+export interface MediaElement {
+  id?: string;
+  mediaId?: string; // Reference to MediaItem.id
+  name?: string; // Added name property
+  url: string; // Added url property
   type: "image" | "video" | "audio";
-  layer: number; // Z-index for layering (0 = background, higher = foreground)
+  layer?: number; // Z-index for layering (0 = background, higher = foreground)
   position: {
     x: number; // X position as percentage (0-100)
     y: number; // Y position as percentage (0-100)
@@ -107,51 +161,26 @@ export interface SlideMediaElement {
     startTime?: number; // Start time in seconds for video/audio
     endTime?: number; // End time in seconds for video/audio
   };
-  visible?: boolean; // Whether the element is visible, default true
+  isVisible: boolean; // Whether the element is visible, default true
   locked?: boolean; // Whether the element is locked from editing, default false
 }
 
-export interface Slide {
-  id: string; // Changed to string for better UUID support
-  title: string;
-  content: string;
-  type: ContentType;
-  thumbnail?: string;
-  duration?: number; // Duration in seconds for auto-advance
-  transition?: SlideTransition;
-  backgroundColor?: string;
-  backgroundImage?: string; // Kept for backward compatibility
-  textColor?: string;
-  fontSize?: number;
-  fontFamily?: string;
-  textAlign?: "left" | "center" | "right" | "justify";
-  order: number; // For slide ordering
-  notes?: string; // Speaker notes
-  createdAt: Date;
-  updatedAt: Date;
-  // New media support properties
-  mediaElements?: SlideMediaElement[]; // Array of media elements on this slide
-  backgroundMedia?: SlideMediaElement; // Dedicated background media (replaces backgroundImage)
-  overlaySettings?: {
-    textOverlay?: boolean; // Whether text content overlays media
-    textBackground?: {
-      enabled: boolean;
-      color?: string;
-      opacity?: number; // 0-1
-      blur?: number; // Background blur for text readability
-    };
-    safeArea?: {
-      enabled: boolean;
-      padding: number; // Padding percentage for text safe area
-    };
-  };
-}
-
 export interface SlideTransition {
-  type: "none" | "fade" | "slide" | "zoom" | "flip" | "cube" | "dissolve";
+  type:
+    | "none"
+    | "fade"
+    | "slide"
+    | "zoom"
+    | "flip"
+    | "cube"
+    | "dissolve"
+    | "wipe"
+    | "iris"
+    | "curtain";
   duration: number; // Transition duration in milliseconds
   direction?: "left" | "right" | "up" | "down";
   easing?: "linear" | "ease-in" | "ease-out" | "ease-in-out";
+  effect?: "bounce" | "elastic" | "rotate" | "scale" | "perspective"; // Additional effect modifiers
 }
 
 export interface Screen {

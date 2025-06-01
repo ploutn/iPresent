@@ -1,0 +1,377 @@
+/* Enhanced Theme System for iPresent */
+
+@layer base {
+  :root {
+    /* Base Light Theme */
+    --background: 0 0% 100%;
+    --foreground: 224 71.4% 4.1%;
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71.4% 4.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 71.4% 4.1%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 262.1 83.3% 57.8%;
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 262.1 83.3% 57.8%;
+    --destructive: 0 72.2% 50.6%;
+    --destructive-foreground: 0 0% 100%;
+    --ring: 262.1 83.3% 57.8%;
+    --radius: 0.75rem;
+    --preview-background: 224 71.4% 4.1%;
+
+    /* Size Variables - Default */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-2xl: 3rem;
+
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --text-3xl: 1.875rem;
+
+    --component-height-sm: 2rem;
+    --component-height-md: 2.5rem;
+    --component-height-lg: 3rem;
+
+    /* Animation Variables */
+    --animation-duration-fast: 150ms;
+    --animation-duration-normal: 300ms;
+    --animation-duration-slow: 500ms;
+    --animation-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark {
+    /* Base Dark Theme */
+    --background: 224 71.4% 10%;
+    --foreground: 210 20% 98%;
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    --popover: 224 71.4% 4.1%;
+    --popover-foreground: 210 20% 98%;
+    --card: 224 71.4% 4.1%;
+    --card-foreground: 210 20% 98%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --primary: 262.1 83.3% 57.8%;
+    --primary-foreground: 210 20% 98%;
+    --secondary: 215 27.9% 16.9%;
+    --secondary-foreground: 210 20% 98%;
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 20% 98%;
+    --ring: 262.1 83.3% 57.8%;
+    --preview-background: 0 0% 0%;
+  }
+
+  /* Theme Variants */
+  .theme-blue {
+    --primary: 221.2 83.2% 53.3%;
+    --ring: 221.2 83.2% 53.3%;
+  }
+
+  .theme-green {
+    --primary: 142.1 76.2% 36.3%;
+    --ring: 142.1 76.2% 36.3%;
+  }
+
+  .theme-purple {
+    --primary: 262.1 83.3% 57.8%;
+    --ring: 262.1 83.3% 57.8%;
+  }
+
+  .theme-orange {
+    --primary: 24.6 95% 53.1%;
+    --ring: 24.6 95% 53.1%;
+  }
+
+  .theme-red {
+    --primary: 346.8 77.2% 49.8%;
+    --ring: 346.8 77.2% 49.8%;
+  }
+
+  /* Size Variants */
+  .size-compact {
+    --spacing-xs: 0.125rem;
+    --spacing-sm: 0.25rem;
+    --spacing-md: 0.5rem;
+    --spacing-lg: 0.75rem;
+    --spacing-xl: 1rem;
+    --spacing-2xl: 1.5rem;
+
+    --text-xs: 0.625rem;
+    --text-sm: 0.75rem;
+    --text-base: 0.875rem;
+    --text-lg: 1rem;
+    --text-xl: 1.125rem;
+    --text-2xl: 1.25rem;
+    --text-3xl: 1.5rem;
+
+    --component-height-sm: 1.75rem;
+    --component-height-md: 2rem;
+    --component-height-lg: 2.25rem;
+
+    --radius: 0.5rem;
+  }
+
+  .size-comfortable {
+    --spacing-xs: 0.375rem;
+    --spacing-sm: 0.75rem;
+    --spacing-md: 1.5rem;
+    --spacing-lg: 2rem;
+    --spacing-xl: 2.5rem;
+    --spacing-2xl: 4rem;
+
+    --text-xs: 0.875rem;
+    --text-sm: 1rem;
+    --text-base: 1.125rem;
+    --text-lg: 1.25rem;
+    --text-xl: 1.375rem;
+    --text-2xl: 1.75rem;
+    --text-3xl: 2.25rem;
+
+    --component-height-sm: 2.5rem;
+    --component-height-md: 3rem;
+    --component-height-lg: 3.5rem;
+
+    --radius: 1rem;
+  }
+
+  /* Animation Control */
+  .animations-disabled * {
+    animation-duration: 0ms !important;
+    transition-duration: 0ms !important;
+  }
+
+  .reduced-motion {
+    --animation-duration-fast: 0ms;
+    --animation-duration-normal: 0ms;
+    --animation-duration-slow: 0ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reduced-motion * {
+      animation-duration: 0ms !important;
+      transition-duration: 0ms !important;
+    }
+  }
+
+  /* Custom Color Support */
+  :root:has([style*="--primary-custom"]) {
+    --primary: var(--primary-custom);
+    --ring: var(--primary-custom);
+  }
+
+  :root:has([style*="--secondary-custom"]) {
+    --secondary: var(--secondary-custom);
+  }
+
+  :root:has([style*="--accent-custom"]) {
+    --accent: var(--accent-custom);
+  }
+}
+
+@layer components {
+  /* Enhanced component styles using theme variables */
+  .theme-button {
+    height: var(--component-height-md);
+    padding: 0 var(--spacing-md);
+    font-size: var(--text-sm);
+    border-radius: var(--radius);
+    transition: all var(--animation-duration-fast) var(--animation-easing);
+  }
+
+  .theme-input {
+    height: var(--component-height-md);
+    padding: 0 var(--spacing-sm);
+    font-size: var(--text-sm);
+    border-radius: calc(var(--radius) - 2px);
+    transition: all var(--animation-duration-fast) var(--animation-easing);
+  }
+
+  .theme-card {
+    padding: var(--spacing-lg);
+    border-radius: var(--radius);
+    transition: all var(--animation-duration-normal) var(--animation-easing);
+  }
+
+  .theme-sidebar {
+    padding: var(--spacing-md);
+    gap: var(--spacing-sm);
+  }
+
+  .theme-header {
+    height: calc(var(--component-height-lg) + var(--spacing-md));
+    padding: 0 var(--spacing-lg);
+    gap: var(--spacing-md);
+  }
+
+  .theme-content {
+    padding: var(--spacing-lg);
+    gap: var(--spacing-md);
+  }
+
+  /* Responsive theme adjustments */
+  @media (max-width: 768px) {
+    .size-default {
+      --spacing-md: 0.75rem;
+      --spacing-lg: 1rem;
+      --component-height-md: 2.25rem;
+      --component-height-lg: 2.75rem;
+    }
+
+    .size-comfortable {
+      --spacing-md: 1rem;
+      --spacing-lg: 1.5rem;
+      --component-height-md: 2.75rem;
+      --component-height-lg: 3.25rem;
+    }
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    :root {
+      --border: 0 0% 20%;
+    }
+
+    .dark {
+      --border: 0 0% 80%;
+    }
+  }
+
+  /* Print styles */
+  @media print {
+    :root {
+      --background: 0 0% 100%;
+      --foreground: 0 0% 0%;
+      --primary: 0 0% 0%;
+      --secondary: 0 0% 50%;
+    }
+  }
+}
+
+@layer utilities {
+  /* Theme-aware utility classes */
+  .text-theme-xs {
+    font-size: var(--text-xs);
+  }
+  .text-theme-sm {
+    font-size: var(--text-sm);
+  }
+  .text-theme-base {
+    font-size: var(--text-base);
+  }
+  .text-theme-lg {
+    font-size: var(--text-lg);
+  }
+  .text-theme-xl {
+    font-size: var(--text-xl);
+  }
+  .text-theme-2xl {
+    font-size: var(--text-2xl);
+  }
+  .text-theme-3xl {
+    font-size: var(--text-3xl);
+  }
+
+  .p-theme-xs {
+    padding: var(--spacing-xs);
+  }
+  .p-theme-sm {
+    padding: var(--spacing-sm);
+  }
+  .p-theme-md {
+    padding: var(--spacing-md);
+  }
+  .p-theme-lg {
+    padding: var(--spacing-lg);
+  }
+  .p-theme-xl {
+    padding: var(--spacing-xl);
+  }
+  .p-theme-2xl {
+    padding: var(--spacing-2xl);
+  }
+
+  .m-theme-xs {
+    margin: var(--spacing-xs);
+  }
+  .m-theme-sm {
+    margin: var(--spacing-sm);
+  }
+  .m-theme-md {
+    margin: var(--spacing-md);
+  }
+  .m-theme-lg {
+    margin: var(--spacing-lg);
+  }
+  .m-theme-xl {
+    margin: var(--spacing-xl);
+  }
+  .m-theme-2xl {
+    margin: var(--spacing-2xl);
+  }
+
+  .gap-theme-xs {
+    gap: var(--spacing-xs);
+  }
+  .gap-theme-sm {
+    gap: var(--spacing-sm);
+  }
+  .gap-theme-md {
+    gap: var(--spacing-md);
+  }
+  .gap-theme-lg {
+    gap: var(--spacing-lg);
+  }
+  .gap-theme-xl {
+    gap: var(--spacing-xl);
+  }
+  .gap-theme-2xl {
+    gap: var(--spacing-2xl);
+  }
+
+  .h-theme-sm {
+    height: var(--component-height-sm);
+  }
+  .h-theme-md {
+    height: var(--component-height-md);
+  }
+  .h-theme-lg {
+    height: var(--component-height-lg);
+  }
+
+  .rounded-theme {
+    border-radius: var(--radius);
+  }
+  .rounded-theme-sm {
+    border-radius: calc(var(--radius) - 2px);
+  }
+  .rounded-theme-lg {
+    border-radius: calc(var(--radius) + 2px);
+  }
+
+  .transition-theme {
+    transition: all var(--animation-duration-normal) var(--animation-easing);
+  }
+
+  .transition-theme-fast {
+    transition: all var(--animation-duration-fast) var(--animation-easing);
+  }
+
+  .transition-theme-slow {
+    transition: all var(--animation-duration-slow) var(--animation-easing);
+  }
+}

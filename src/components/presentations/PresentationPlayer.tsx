@@ -213,8 +213,8 @@ export function PresentationPlayer({
           position: "absolute",
           left: `${media.position.x}%`,
           top: `${media.position.y}%`,
-          width: media.size ? `${media.size.width}%` : "auto",
-          height: media.size ? `${media.size.height}%` : "auto",
+          width: media.size?.width ? `${media.size.width}%` : "auto",
+          height: media.size?.height ? `${media.size.height}%` : "auto",
           opacity: media.opacity,
           zIndex: media.layer,
           objectFit: "contain",
@@ -224,8 +224,8 @@ export function PresentationPlayer({
           return (
             <img
               key={media.id}
-              src={media.url}
-              alt={media.name}
+              src={media.url || ""}
+              alt={media.name || ""}
               style={style}
             />
           );
@@ -233,23 +233,31 @@ export function PresentationPlayer({
           return (
             <video
               key={media.id}
-              src={media.url}
+              src={media.url || ""}
               style={style}
               autoPlay={media.playback?.autoplay}
               loop={media.playback?.loop}
               muted={media.playback?.volume === 0}
-              volume={media.playback?.volume}
+              volume={
+                media.playback?.volume !== undefined
+                  ? media.playback.volume / 100
+                  : undefined
+              } // Volume is 0-1 for HTML media elements
             />
           );
         } else if (media.type === "audio") {
           return (
             <audio
               key={media.id}
-              src={media.url}
+              src={media.url || ""}
               autoPlay={media.playback?.autoplay}
               loop={media.playback?.loop}
               muted={media.playback?.volume === 0}
-              volume={media.playback?.volume}
+              volume={
+                media.playback?.volume !== undefined
+                  ? media.playback.volume / 100
+                  : undefined
+              } // Volume is 0-1 for HTML media elements
               style={{ display: "none" }} // Audio elements are not visible
             />
           );

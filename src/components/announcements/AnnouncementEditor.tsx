@@ -150,18 +150,23 @@ export const AnnouncementEditor: React.FC<AnnouncementEditorProps> = ({
 
   return (
     <div className="w-full max-w-3xl mx-auto bg-[#181C23] rounded-lg shadow-lg p-6 mt-8">
+      {" "}
       <div className="flex items-center justify-between mb-4">
+        {" "}
         <div className="flex gap-2">
+          {" "}
           <Button
             variant="outline"
             onClick={() => setActiveIndex(Math.max(0, activeIndex - 1))}
             disabled={activeIndex === 0}
           >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+            {" "}
+            <ArrowLeft className="h-4 w-4" />{" "}
+          </Button>{" "}
           <span className="text-white font-medium">
-            Slide {activeIndex + 1} / {slides.length}
-          </span>
+            {" "}
+            Slide {activeIndex + 1} / {slides.length}{" "}
+          </span>{" "}
           <Button
             variant="outline"
             onClick={() =>
@@ -169,26 +174,33 @@ export const AnnouncementEditor: React.FC<AnnouncementEditorProps> = ({
             }
             disabled={activeIndex === slides.length - 1}
           >
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-        </div>
+            {" "}
+            <ArrowRight className="h-4 w-4" />{" "}
+          </Button>{" "}
+        </div>{" "}
         <div className="flex gap-2">
+          {" "}
           <Button variant="ghost" onClick={addSlide}>
-            <Plus className="h-4 w-4" /> Add Slide
-          </Button>
+            {" "}
+            <Plus className="h-4 w-4" /> Add Slide{" "}
+          </Button>{" "}
           <Button
             variant="destructive"
             onClick={() => removeSlide(activeIndex)}
             disabled={slides.length === 1}
           >
-            <Trash2 className="h-4 w-4" /> Remove Slide
-          </Button>
-        </div>
-      </div>
+            {" "}
+            <Trash2 className="h-4 w-4" /> Remove Slide{" "}
+          </Button>{" "}
+        </div>{" "}
+      </div>{" "}
       <Card className="bg-[#23272F] border-[#4A5568] mb-4">
+        {" "}
         <CardContent className="relative min-h-[300px] flex flex-col items-center justify-center">
+          {" "}
           {activeSlide.elements.map((el, idx) => (
             <div key={el.id} className="mb-4 w-full flex flex-col items-center">
+              {" "}
               {el.type === "text" ? (
                 <Textarea
                   className="text-white bg-transparent border-none text-center text-lg font-semibold resize-none focus:ring-2 focus:ring-[#3182CE]"
@@ -206,6 +218,7 @@ export const AnnouncementEditor: React.FC<AnnouncementEditorProps> = ({
                 />
               ) : el.type === "image" ? (
                 <div className="flex flex-col items-center">
+                  {" "}
                   <Input
                     type="text"
                     placeholder="Image URL"
@@ -214,47 +227,52 @@ export const AnnouncementEditor: React.FC<AnnouncementEditorProps> = ({
                       updateElement(activeIndex, idx, { src: e.target.value })
                     }
                     className="mb-2"
-                  />
+                  />{" "}
                   {el.src && (
                     <img
                       src={el.src}
                       alt="slide"
                       className="max-h-40 rounded shadow"
                     />
-                  )}
+                  )}{" "}
                 </div>
-              ) : null}
+              ) : null}{" "}
               <div className="flex gap-2 mt-2">
+                {" "}
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => removeElement(idx)}
                 >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
+                  {" "}
+                  <Trash2 className="h-4 w-4" />{" "}
+                </Button>{" "}
+              </div>{" "}
             </div>
-          ))}
+          ))}{" "}
           <div className="flex gap-4 mt-4">
+            {" "}
             <Button variant="outline" onClick={() => addElement("text")}>
               {" "}
-              <Type className="h-4 w-4 mr-1" /> Add Text
-            </Button>
+              <Type className="h-4 w-4 mr-1" /> Add Text{" "}
+            </Button>{" "}
             <Button variant="outline" onClick={() => addElement("image")}>
               {" "}
-              <ImageIcon className="h-4 w-4 mr-1" /> Add Image
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+              <ImageIcon className="h-4 w-4 mr-1" /> Add Image{" "}
+            </Button>{" "}
+          </div>{" "}
+        </CardContent>{" "}
+      </Card>{" "}
       <div className="flex justify-end">
+        {" "}
         <Button
           onClick={() => onSave(slides)}
           className="bg-[#3182CE] text-white hover:bg-[#2563EB]"
         >
-          Save Announcement
-        </Button>
-      </div>
+          {" "}
+          Save Announcement{" "}
+        </Button>{" "}
+      </div>{" "}
     </div>
   );
 };

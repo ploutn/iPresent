@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StageDisplayTemplate,
   StageDisplayElement,
@@ -69,8 +69,6 @@ interface StageDisplayTemplateManagerProps {
   onTemplateCreate: (template: StageDisplayTemplate) => void;
   onTemplateUpdate: (template: StageDisplayTemplate) => void;
   onTemplateDelete: (templateId: string) => void;
-  onTemplateExport: (templateId: string) => void;
-  onTemplateImport: (file: File) => void;
 }
 
 // Removed local ElementPosition and ElementStyle interfaces as StageDisplayElement.style (React.CSSProperties) is preferred.
@@ -297,19 +295,7 @@ export function StageDisplayTemplateManager({
   onTemplateCreate,
   onTemplateUpdate,
   onTemplateDelete,
-  onTemplateExport,
-  onTemplateImport,
 }: StageDisplayTemplateManagerProps) {
-  const [selectedTemplate, setSelectedTemplate] =
-    useState<StageDisplayTemplate | null>(
-      () => allTemplates.find((t) => t.id === activeTemplateId) || null
-    );
-  // const [isEditing, setIsEditing] = useState(false); // Seems unused
-  const [editingElement, setEditingElement] =
-    useState<StageDisplayElement | null>(null);
-  const [newTemplateName, setNewTemplateName] = useState("");
-  const [newTemplateDescription, setNewTemplateDescription] = useState(""); // For description
-
   const allTemplates = [
     ...DEFAULT_TEMPLATES,
     ...templates.filter(
@@ -319,6 +305,14 @@ export function StageDisplayTemplateManager({
   ]; // Prevent duplicates if user saves a template with a default ID
 
   const activeTemplate = allTemplates.find((t) => t.id === activeTemplateId);
+
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<StageDisplayTemplate | null>(() => activeTemplate || null);
+  // const [isEditing, setIsEditing] = useState(false); // Seems unused
+  const [editingElement, setEditingElement] =
+    useState<StageDisplayElement | null>(null);
+  const [newTemplateName, setNewTemplateName] = useState("");
+  const [newTemplateDescription, setNewTemplateDescription] = useState(""); // For description
 
   const handleTemplateSelect = (templateId: string) => {
     const foundTemplate = allTemplates.find((t) => t.id === templateId);
@@ -413,13 +407,6 @@ export function StageDisplayTemplateManager({
     }
   };
 
-  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      onTemplateImport(file);
-    }
-  };
-
   // Effect to update selectedTemplate if activeTemplateId changes from props
   useEffect(() => {
     const currentActiveTemplate = allTemplates.find(
@@ -447,23 +434,14 @@ export function StageDisplayTemplateManager({
           <Button
             variant="outline"
             size="sm"
-            onClick={() =>
-              selectedTemplate && onTemplateExport(selectedTemplate.id)
-            }
-            disabled={!selectedTemplate}
+            disabled={true} // Export functionality removed
           >
             <Download className="h-4 w-4 mr-2" /> Export
           </Button>
-          <Button variant="outline" size="sm" asChild>
-            <label className="cursor-pointer">
-              <Upload className="h-4 w-4 mr-2" /> Import
-              <input
-                type="file"
-                accept=".json"
-                onChange={handleFileImport}
-                className="hidden"
-              />
-            </label>
+          <Button variant="outline" size="sm" disabled={true}>
+            {" "}
+            {/* Import functionality removed */}
+            <Upload className="h-4 w-4 mr-2" /> Import
           </Button>
         </div>
       </div>
@@ -518,14 +496,7 @@ export function StageDisplayTemplateManager({
                         <Edit className="h-4 w-4 mr-2" /> Edit
                       </DropdownMenuItem>
                       {/* <DropdownMenuItem> <Copy className="h-4 w-4 mr-2" /> Duplicate </DropdownMenuItem> */}
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onTemplateExport(template.id);
-                        }}
-                      >
-                        <Download className="h-4 w-4 mr-2" /> Export
-                      </DropdownMenuItem>
+
                       {!DEFAULT_TEMPLATES.find(
                         (dt) => dt.id === template.id
                       ) && (

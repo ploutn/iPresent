@@ -43,11 +43,10 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { useContentStore } from "../../stores/useContentStore"; // Added import
 import { SlideManager } from "./SlideManager";
-import { SlideEditorDialog } from "../slides/SlideEditorDialog";
 import { PresentationPlayer } from "./PresentationPlayer";
 import { usePresentationStore } from "../../store/presentationStore";
 
-import type { Slide, PresentationContentItem } from "../../types/index";
+import type { Slide, PresentationContentItem } from "@/types";
 
 // Define the path for the live presentation output window
 const LIVE_PRESENTATION_OUTPUT_PATH = "/live-presentation-output";
@@ -220,7 +219,7 @@ export function PresentationsPage() {
       id: presentation.id,
       title: presentation.title,
       type: "presentation" as const,
-      content: presentation.content,
+      content: presentation.content || "", // Ensure content is a string
       tags: [],
       createdAt: new Date(presentation.createdAt),
       updatedAt: new Date(presentation.updatedAt),
@@ -341,6 +340,7 @@ export function PresentationsPage() {
         id: uuidv4(),
         title: currentPresentationTitle,
         description: currentPresentationDescription,
+        content: currentPresentationDescription, // Add content property
         createdAt: new Date(),
         updatedAt: new Date(),
         slides: currentSlides, // Save current slides for new presentation

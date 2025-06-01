@@ -2,6 +2,13 @@ import React, { useState } from "react";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
 import {
+  ResponsiveCard,
+  ResponsiveButton,
+  ResponsiveInput,
+  ResponsiveText,
+} from "../ResponsiveCard";
+import { useResponsive } from "../../hooks/useResponsive";
+import {
   Settings,
   Monitor,
   Laptop,
@@ -46,16 +53,19 @@ import { LivePresentation } from "../LivePresentation";
 import { ScheduleView } from "../ScheduleView";
 import { SlideEditorPanel } from "../SlideEditorPanel";
 import { StageDisplayEditor } from "../StageDisplayEditor";
-import { StageDisplayTemplates } from "../StageDisplayTemplates";
-import { StageDisplayPreview } from "../StageDisplayPreview";
+import { StageDisplayTemplateManager } from "../stageDisplay/StageDisplayTemplateManager";
+import { StageDisplayPreview } from "../stageDisplay/StageDisplayPreview";
 import { VisualOutputMapping } from "../VisualOutputMapping";
 import { useContentStore } from "../../stores/useContentStore";
 import { useUISettingsStore } from "../../stores/useUISettingsStore";
 import { Slide } from "../../types";
 import { DisplayDevice } from "../../types/outputManagement";
 import { MediaCacheStats } from "../media/MediaCacheStats";
+import { ThemeSettings } from "./ThemeSettings";
+import { MobileSettingsNav } from "../MobileSettingsNav";
 
 export function SettingsPage(): JSX.Element {
+  const { isMobile, isTablet, isDesktop } = useResponsive();
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
 
   const toggleCustomizeModal = () => {
@@ -290,71 +300,25 @@ export function SettingsPage(): JSX.Element {
       case "appearance":
         return (
           <div className="space-y-4">
-            <h3 className="text-lg font-medium text-white flex items-center gap-2">
-              <Palette className="h-5 w-5" />
-              Appearance
-            </h3>
-            <div className="space-y-4 pl-7">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="dark-mode" className="text-white">
-                    Dark Mode
-                  </Label>
-                  <p className="text-xs text-[#A0AEC0]">
-                    Toggle between light and dark themes
-                  </p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Sun className="h-4 w-4 text-[#A0AEC0]" />
-                  <Switch id="dark-mode" />
-                  <Moon className="h-4 w-4 text-[#A0AEC0]" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="accent-color" className="text-white">
-                  Accent Color
-                </Label>
-                <div className="flex items-center space-x-2">
-                  <Input
-                    id="accent-color"
-                    type="color"
-                    value="#3182CE"
-                    className="w-10 h-10 p-1"
-                  />
-                  <div className="grid grid-cols-6 gap-2">
-                    {[
-                      "#3182CE",
-                      "#38A169",
-                      "#DD6B20",
-                      "#E53E3E",
-                      "#805AD5",
-                      "#D53F8C",
-                    ].map((color) => (
-                      <div
-                        key={color}
-                        className="w-6 h-6 rounded-full cursor-pointer"
-                        style={{ backgroundColor: color }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
+            <ThemeSettings />
 
-              {/* UI Customization Toggles */}
-              <div className="space-y-2 pt-4 border-t border-gray-700 mt-4">
-                <h4 className="text-sm font-medium text-white">
+            {/* UI Customization Toggles */}
+            <div className="space-y-4 pt-6 border-t border-border">
+              <h3 className="text-lg font-medium flex items-center gap-2">
+                <Eye className="h-5 w-5" />
+                Interface Customization
+              </h3>
+              <div className="space-y-4 pl-7">
+                <h4 className="text-sm font-medium">
                   Customize Interface Sections
                 </h4>
                 {/* Display Tab Sections */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label
-                      htmlFor="show-schedule-management"
-                      className="text-white"
-                    >
+                    <Label htmlFor="show-schedule-management">
                       Show Schedule Management (Display Tab)
                     </Label>
-                    <p className="text-xs text-[#A0AEC0]">
+                    <p className="text-xs text-muted-foreground">
                       Toggle visibility of the Schedule Management section.
                     </p>
                   </div>
@@ -368,13 +332,10 @@ export function SettingsPage(): JSX.Element {
                 </div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label
-                      htmlFor="show-live-presentation"
-                      className="text-white"
-                    >
+                    <Label htmlFor="show-live-presentation">
                       Show Live Presentation Control (Display Tab)
                     </Label>
-                    <p className="text-xs text-[#A0AEC0]">
+                    <p className="text-xs text-muted-foreground">
                       Toggle visibility of the Live Presentation Control
                       section.
                     </p>
@@ -390,15 +351,12 @@ export function SettingsPage(): JSX.Element {
                   />
                 </div>
                 {/* Output Mapping Tab Section */}
-                <div className="flex items-center justify-between pt-2 mt-2 border-t border-gray-800">
+                <div className="flex items-center justify-between pt-2 mt-2 border-t border-border">
                   <div>
-                    <Label
-                      htmlFor="show-output-mapping-content"
-                      className="text-white"
-                    >
+                    <Label htmlFor="show-output-mapping-content">
                       Show Output Mapping Content
                     </Label>
-                    <p className="text-xs text-[#A0AEC0]">
+                    <p className="text-xs text-muted-foreground">
                       Toggle visibility of the Output Mapping tab content.
                     </p>
                   </div>
@@ -411,15 +369,12 @@ export function SettingsPage(): JSX.Element {
                   />
                 </div>
                 {/* Templates Tab Section */}
-                <div className="flex items-center justify-between pt-2 mt-2 border-t border-gray-800">
+                <div className="flex items-center justify-between pt-2 mt-2 border-t border-border">
                   <div>
-                    <Label
-                      htmlFor="show-templates-content"
-                      className="text-white"
-                    >
+                    <Label htmlFor="show-templates-content">
                       Show Templates Content
                     </Label>
-                    <p className="text-xs text-[#A0AEC0]">
+                    <p className="text-xs text-muted-foreground">
                       Toggle visibility of the Templates tab content.
                     </p>
                   </div>
@@ -432,7 +387,7 @@ export function SettingsPage(): JSX.Element {
                   />
                 </div>
                 {/* Reset to Default Button */}
-                <div className="flex items-center justify-end pt-4 mt-4 border-t border-gray-700">
+                <div className="flex items-center justify-end pt-4 mt-4 border-t border-border">
                   <Button
                     variant="outline"
                     size="sm"
@@ -541,79 +496,38 @@ export function SettingsPage(): JSX.Element {
               <div className="border border-[#4A5568] rounded-lg overflow-hidden bg-[#1A202C] p-4">
                 <h4 className="text-md font-medium text-white mb-2">Preview</h4>
                 <StageDisplayPreview
-                  template={activeTemplate}
-                  currentSlide={items[0]}
-                  nextSlide={items[1]}
-                  className="w-full"
+                  config={stageDisplayConfig} // ✅ Pass the full config instead of just activeTemplate
+                  currentSlide={items[0] as Slide}
+                  nextSlide={items[1] as Slide}
+                  speakerNotes="" // ✅ Add required prop
+                  isPresenting={stageDisplayConfig.isActive} // ✅ Add required prop
+                  presentationTime={0} // ✅ Add required prop (or track actual time)
+                  onConfigChange={(config) => {
+                    // ✅ Add required prop
+                    // Handle config changes if needed
+                    console.log("Config changed:", config);
+                  }}
+                  // Remove className as it's not expected
                 />
+
                 <div className="mt-4">
                   <h4 className="text-md font-medium text-white mb-2">
                     Templates
                   </h4>
                   <div className="h-[200px] overflow-y-auto">
-                    <StageDisplayTemplates
+                    <StageDisplayTemplateManager
                       templates={stageDisplayConfig.templates}
-                      onSelectTemplate={setActiveTemplate}
                       activeTemplateId={stageDisplayConfig.activeTemplateId}
+                      onTemplateChange={setActiveTemplate}
+                      onTemplateCreate={(template) =>
+                        createTemplate(template.name)
+                      }
+                      onTemplateUpdate={saveTemplate}
+                      onTemplateDelete={deleteTemplate}
                     />
                   </div>
                 </div>
               </div>
-
-              {/* UI Customization Toggles - TO BE MOVED */}
-              {/*
-              <div className="space-y-2 pt-4 border-t border-gray-700 mt-4">
-                <h4 className="text-sm font-medium text-white">
-                  Customize Display Tab Sections
-                </h4>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label
-                      htmlFor="show-schedule-management"
-                      className="text-white"
-                    >
-                      Show Schedule Management
-                    </Label>
-                    <p className="text-xs text-[#A0AEC0]">
-                      Toggle visibility of the Schedule Management section in
-                      the Display tab.
-                    </p>
-                  </div>
-                  <Switch
-                    id="show-schedule-management"
-                    checked={sections.isScheduleManagementVisible}
-                    onCheckedChange={() =>
-                      toggleSectionVisibility(
-                        "isScheduleManagementVisible"
-                      )
-                    }
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label
-                      htmlFor="show-live-presentation-control"
-                      className="text-white"
-                    >
-                      Show Live Presentation Control
-                    </Label>
-                    <p className="text-xs text-[#A0AEC0]">
-                      Toggle visibility of the Live Presentation Control
-                      section in the Display tab.
-                    </p>
-                  </div>
-                  <Switch
-                    id="show-live-presentation-control"
-                    checked={sections.isLivePresentationControlVisible}
-                    onCheckedChange={() =>
-                      toggleSectionVisibility(
-                        "isLivePresentationControlVisible"
-                      )
-                    }
-                  />
-                </div>
-              </div>
-              */}
             </div>
           </div>
         );
@@ -660,55 +574,80 @@ export function SettingsPage(): JSX.Element {
   return (
     <div className="h-full flex flex-col bg-[#2D3748]">
       {/* Header */}
-      <div className="p-4 border-b border-[#4A5568] bg-[#1A202C]">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-white">Settings</h2>
-          <Button className="bg-[#3182CE] hover:bg-[#2B6CB0]">
+      <div className="p-responsive border-b border-[#4A5568] bg-[#1A202C]">
+        <div className="flex-responsive-between">
+          <ResponsiveText className="text-responsive-xl font-semibold text-white">
+            Settings
+          </ResponsiveText>
+          <ResponsiveButton className="bg-[#3182CE] hover:bg-[#2B6CB0] btn-responsive">
             <Save className="h-4 w-4 mr-2" />
-            Save Changes
-          </Button>
+            {!isMobile && "Save Changes"}
+          </ResponsiveButton>
         </div>
       </div>
-
+      {/* Removed extra </div> that was here */}
+      {/* Mobile Navigation */}
+      {isMobile && (
+        <MobileSettingsNav
+          settingsOptions={settingsOptions}
+          activeSetting={activeSetting}
+          onSettingChange={setActiveSetting}
+        />
+      )}
       {/* Main Content Area */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <nav className="w-64 bg-[#1E293B] p-6 space-y-4 border-r border-[#2D2D2D]">
-          <div className="p-0 border-b border-[#2D2D2D] flex justify-between items-center mb-6 pb-6">
-            <h2 className="text-xl font-bold">SETTINGS</h2>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={toggleCustomizeModal}
-              title="Customize Interface"
-            >
-              <Palette className="h-5 w-5" />
-            </Button>
-          </div>
-          <nav className="space-y-1">
-            {settingsOptions.map((option) => (
+      <div
+        className={`flex flex-1 overflow-hidden ${
+          isMobile ? "flex-col" : "flex-row"
+        }`}
+      >
+        {/* Desktop Sidebar */}
+        {!isMobile && (
+          <nav className="w-64 bg-[#1E293B] p-responsive space-y-4 border-r border-[#2D2D2D]">
+            {" "}
+            {/* Desktop Sidebar Nav START */}
+            <div className="p-0 border-b border-[#2D2D2D] flex justify-between items-center mb-6 pb-6">
+              <h2 className="text-xl font-bold">SETTINGS</h2>
               <Button
-                key={option.id}
-                variant="ghost"
-                className={`w-full justify-start px-3 py-2 rounded-md text-sm font-medium flex items-center space-x-3 ${
-                  activeSetting === option.id
-                    ? "bg-[#3182CE] text-white"
-                    : "text-gray-300 hover:bg-[#2D3748] hover:text-white"
-                }`}
-                onClick={() => setActiveSetting(option.id)}
+                variant="outline"
+                size="icon"
+                onClick={toggleCustomizeModal}
+                title="Customize Interface"
               >
-                {option.icon}
-                <span>{option.label}</span>
+                <Palette className="h-5 w-5" />
               </Button>
-            ))}
-          </nav>
-        </nav>
-
-        {/* Main Content Area */}
-
-        {/* Main Content Area */}
-        <ScrollArea className="flex-1 p-6">{renderContent()}</ScrollArea>
-
+            </div>
+            <nav className="space-y-1">
+              {" "}
+              {/* Inner Nav for items START */}
+              {settingsOptions.map((option) => (
+                <ResponsiveButton
+                  key={option.id}
+                  variant="ghost"
+                  className={`w-full justify-start touch-target rounded-md text-responsive-sm font-medium flex items-center gap-responsive-sm ${
+                    activeSetting === option.id
+                      ? "bg-[#3182CE] text-white"
+                      : "text-gray-300 hover:bg-[#2D3748] hover:text-white"
+                  }`}
+                  onClick={() => setActiveSetting(option.id)}
+                >
+                  {option.icon}
+                  <span className={isMobile ? "sr-only sm:not-sr-only" : ""}>
+                    {option.label}
+                  </span>
+                </ResponsiveButton>
+              ))}
+            </nav>{" "}
+            {/* Inner Nav for items END */}
+          </nav> // Desktop Sidebar Nav END - Moved here
+        )}{" "}
+        {/* Conditional rendering for Desktop Sidebar END - This correctly closes the block */}
+        {/* Main Content Area - Scrollable */}
+        <ScrollArea
+          className={`flex-1 p-responsive ${isMobile ? "min-h-0" : ""}`}
+        >
+          {renderContent()}
+        </ScrollArea>
+        {/* Dialog for Customize Interface */}
         <Dialog
           open={isCustomizeModalOpen}
           onOpenChange={setIsCustomizeModalOpen}

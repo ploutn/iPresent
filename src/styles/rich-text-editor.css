@@ -1,0 +1,265 @@
+/* src/styles/rich-text-editor.css */
+
+/* Rich Text Editor Styles */
+.rich-text-editor {
+  @apply relative;
+}
+
+.editor-container {
+  @apply relative;
+}
+
+.editor-input {
+  @apply min-h-[200px] max-h-[500px] overflow-y-auto;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.editor-placeholder {
+  @apply text-slate-400 pointer-events-none select-none;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Text formatting styles */
+.editor-text-bold {
+  font-weight: bold;
+}
+
+.editor-text-italic {
+  font-style: italic;
+}
+
+.editor-text-underline {
+  text-decoration: underline;
+}
+
+.editor-text-strikethrough {
+  text-decoration: line-through;
+}
+
+.editor-text-underlineStrikethrough {
+  text-decoration: underline line-through;
+}
+
+.editor-text-code {
+  @apply bg-slate-700 px-1 py-0.5 rounded text-sm font-mono;
+}
+
+/* Heading styles */
+.editor-heading-h1 {
+  @apply text-3xl font-bold mb-4 mt-6;
+}
+
+.editor-heading-h2 {
+  @apply text-2xl font-bold mb-3 mt-5;
+}
+
+.editor-heading-h3 {
+  @apply text-xl font-bold mb-3 mt-4;
+}
+
+.editor-heading-h4 {
+  @apply text-lg font-bold mb-2 mt-4;
+}
+
+.editor-heading-h5 {
+  @apply text-base font-bold mb-2 mt-3;
+}
+
+.editor-heading-h6 {
+  @apply text-sm font-bold mb-2 mt-3;
+}
+
+/* Paragraph styles */
+.editor-paragraph {
+  @apply mb-3;
+}
+
+.editor-paragraph:last-child {
+  @apply mb-0;
+}
+
+/* List styles */
+.editor-list-ol {
+  @apply list-decimal list-inside mb-3 pl-4;
+}
+
+.editor-list-ul {
+  @apply list-disc list-inside mb-3 pl-4;
+}
+
+.editor-listitem {
+  @apply mb-1;
+}
+
+.editor-nested-listitem {
+  @apply ml-4;
+}
+
+/* Quote styles */
+.editor-quote {
+  @apply border-l-4 border-blue-500 pl-4 py-2 mb-3 italic bg-slate-800/30;
+}
+
+/* Link styles */
+.editor-link {
+  @apply text-blue-400 underline hover:text-blue-300 transition-colors;
+}
+
+/* Code block styles */
+.editor-code {
+  @apply bg-slate-800 p-4 rounded-lg mb-3 font-mono text-sm overflow-x-auto;
+}
+
+/* Code highlighting */
+.editor-tokenComment {
+  @apply text-slate-400;
+}
+
+.editor-tokenPunctuation {
+  @apply text-slate-300;
+}
+
+.editor-tokenProperty {
+  @apply text-blue-400;
+}
+
+.editor-tokenSelector {
+  @apply text-green-400;
+}
+
+.editor-tokenOperator {
+  @apply text-yellow-400;
+}
+
+.editor-tokenAttr {
+  @apply text-purple-400;
+}
+
+.editor-tokenVariable {
+  @apply text-red-400;
+}
+
+.editor-tokenFunction {
+  @apply text-cyan-400;
+}
+
+/* Image styles */
+.editor-image {
+  @apply max-w-full h-auto rounded-lg mb-3;
+}
+
+/* Focus styles */
+.editor-input:focus {
+  @apply outline-none;
+}
+
+/* Selection styles */
+.editor-input ::selection {
+  @apply bg-blue-600/30;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .editor-input {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+
+  .editor-heading-h1 {
+    @apply text-2xl;
+  }
+
+  .editor-heading-h2 {
+    @apply text-xl;
+  }
+
+  .editor-heading-h3 {
+    @apply text-lg;
+  }
+}
+
+/* Dark theme adjustments */
+.dark .editor-input {
+  @apply text-white;
+}
+
+.dark .editor-placeholder {
+  @apply text-slate-500;
+}
+
+.dark .editor-quote {
+  @apply bg-slate-700/30;
+}
+
+.dark .editor-code {
+  @apply bg-slate-900;
+}
+
+/* Animation for toolbar */
+.rich-text-toolbar {
+  @apply transition-all duration-200 ease-in-out;
+}
+
+/* Toolbar button states */
+.toolbar-button-active {
+  @apply bg-blue-600 text-white;
+}
+
+.toolbar-button-inactive {
+  @apply bg-transparent text-slate-400 hover:text-white hover:bg-slate-700;
+}
+
+/* Custom scrollbar for editor */
+.editor-input::-webkit-scrollbar {
+  width: 8px;
+}
+
+.editor-input::-webkit-scrollbar-track {
+  @apply bg-slate-800;
+}
+
+.editor-input::-webkit-scrollbar-thumb {
+  @apply bg-slate-600 rounded-full;
+}
+
+.editor-input::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-500;
+}
+
+/* Ensure proper spacing in lists */
+.editor-list-ol .editor-listitem,
+.editor-list-ul .editor-listitem {
+  @apply mb-1;
+}
+
+.editor-list-ol .editor-listitem:last-child,
+.editor-list-ul .editor-listitem:last-child {
+  @apply mb-0;
+}
+
+/* Table styles (if tables are added later) */
+.editor-table {
+  @apply border-collapse border border-slate-600 mb-3;
+}
+
+.editor-table-cell {
+  @apply border border-slate-600 p-2;
+}
+
+/* Accessibility improvements */
+.editor-input:focus-visible {
+  @apply ring-2 ring-blue-500 ring-offset-2 ring-offset-slate-900;
+}
+
+/* Print styles */
+@media print {
+  .rich-text-editor .editor-container {
+    @apply border-none;
+  }
+
+  .editor-input {
+    @apply text-black bg-white;
+  }
+}

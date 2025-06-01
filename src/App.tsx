@@ -1,5 +1,13 @@
+import "./styles/responsive.css";
+import "./styles/accessibility.css";
 import React, { useState } from "react";
 import { Sidebar } from "./components/Sidebar";
+import {
+  ResponsiveLayout,
+  ResponsiveContainer,
+  ResponsiveStack,
+} from "./components/ResponsiveLayout";
+import { useResponsive } from "./hooks/useResponsive";
 import { NavigationHeader } from "./components/navigation/NavigationHeader";
 import { Suspense, lazy } from "react";
 
@@ -81,6 +89,8 @@ import { PresenterNotes } from "./components/interactive/PresenterNotes";
 import { InteractiveElementForm } from "./components/interactive/InteractiveElementForm";
 import { AnyInteractiveElement } from "./types/interactive";
 import { MediaCacheProvider } from "./components/media/MediaCacheProvider";
+import { ThemeProvider } from "./components/theme/ThemeProvider";
+import { QuickThemeToggle } from "./components/theme/ThemeToggle";
 
 // Loading component for lazy-loaded pages
 const PageLoader = () => (
@@ -103,8 +113,9 @@ function MainAppContent() {
     useState(false);
   const [editingElement, setEditingElement] =
     useState<AnyInteractiveElement | null>(null);
-  const [theme, setTheme] = useState("dark");
+  // Theme is now managed by ThemeProvider
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const { isMobile, isTablet, isDesktop } = useResponsive();
 
   console.log("Current activeTab in App.tsx:", activeTab); // DEBUG LOG
 
@@ -154,11 +165,7 @@ function MainAppContent() {
     return <Suspense fallback={<PageLoader />}>{content}</Suspense>;
   };
 
-  // Theme toggle handler
-  const handleThemeToggle = () => {
-    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
-    document.documentElement.classList.toggle("dark");
-  };
+  // Theme toggle is now handled by the ThemeProvider component
 
   // Helper to get display name for interactive element
   function getElementDisplayName(element: AnyInteractiveElement) {
@@ -212,65 +219,68 @@ function MainAppContent() {
 
   return (
     <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden relative">
-      {/* Modern Header */}
-      <header className="h-14 border-b border-border px-6 flex items-center justify-between bg-card shadow-md z-10">
+      {/* Modern Header - Responsive */}
+      <header
+        className={`h-14 border-b border-border flex items-center justify-between bg-card shadow-md z-10 ${
+          isMobile ? "px-4" : "px-6"
+        }`}
+      >
         <div className="flex items-center gap-4">
-          <span className="text-2xl font-extrabold tracking-tight text-primary">
-            iPresent Pro
+          <span
+            className={`font-extrabold tracking-tight text-primary ${
+              isMobile ? "text-lg" : "text-2xl"
+            }`}
+          >
+            {isMobile ? "iP" : "iPresent Pro"}
           </span>
-          <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium text-xs">
-            Connected
-          </span>
+          {!isMobile && (
+            <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium text-xs">
+              Connected
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 hover:bg-accent"
-                  onClick={handleThemeToggle}
-                >
-                  {theme === "dark" ? (
-                    <Sun className="h-5 w-5" />
-                  ) : (
-                    <Moon className="h-5 w-5" />
-                  )}
-                </Button>
+                <QuickThemeToggle className="h-9 w-9 hover:bg-accent" />
               </TooltipTrigger>
               <TooltipContent>Toggle Theme</TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 hover:bg-accent"
-                  onClick={() => setShowShortcuts(true)}
-                >
-                  <Keyboard className="h-5 w-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Keyboard Shortcuts</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 hover:bg-accent"
-                >
-                  <HelpCircle className="h-5 w-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Help & Docs</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          {!isMobile && (
+            <>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9 hover:bg-accent"
+                      onClick={() => setShowShortcuts(true)}
+                    >
+                      <Keyboard className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Keyboard Shortcuts</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9 hover:bg-accent"
+                    >
+                      <HelpCircle className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Help & Docs</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </>
+          )}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -288,86 +298,133 @@ function MainAppContent() {
           </TooltipProvider>
         </div>
       </header>
-      {/* Navigation Header with Breadcrumbs and Quick Access */}
-      <NavigationHeader
-        onSearch={(query) => {
-          // Handle global search
-          console.log("Global search:", query);
-        }}
-        contextualActions={
-          <div className="flex items-center gap-2">
-            {activeTab === "presentations" && (
-              <Button size="sm" variant="outline">
-                <Plus className="h-4 w-4 mr-1" />
-                New Presentation
-              </Button>
-            )}
-            {activeTab === "songs" && (
-              <Button size="sm" variant="outline">
-                <Plus className="h-4 w-4 mr-1" />
-                Add Song
-              </Button>
-            )}
-            {activeTab === "media" && (
-              <Button size="sm" variant="outline">
-                <Plus className="h-4 w-4 mr-1" />
-                Import Media
-              </Button>
-            )}
-          </div>
-        }
-      />
-      <div className="flex flex-1 min-h-0">
-        {/* Sidebar */}
-        <div className="w-[100px] bg-card border-r border-border flex flex-col items-center py-6 h-full overflow-y-auto">
-          <Sidebar onSelectItem={setSelectedItem} />
-        </div>
-        {/* Main Content */}
-        <div className="flex-1 bg-background overflow-y-auto">
-          <div className="p-6">{renderActiveContent()}</div>
-        </div>
-        {/* Right Panel */}
-        <div className="w-[400px] bg-background border-l border-border flex flex-col gap-6 p-6 h-full min-w-[320px] max-w-[480px]">
-          <div className="bg-card rounded-xl shadow-lg p-6 flex-1 flex flex-col">
-            <h2 className="text-lg font-bold mb-4 tracking-wide text-foreground">
-              PREVIEW
-            </h2>
-            <div className="flex-1 flex flex-col items-stretch justify-stretch">
-              <Preview />
+
+      {/* Navigation Header - Hide on mobile */}
+      {!isMobile && (
+        <NavigationHeader
+          onSearch={(query) => {
+            // Handle global search
+            console.log("Global search:", query);
+          }}
+          contextualActions={
+            <div className="flex items-center gap-2">
+              {activeTab === "presentations" && (
+                <Button size="sm" variant="outline">
+                  <Plus className="h-4 w-4 mr-1" />
+                  New Presentation
+                </Button>
+              )}
+              {activeTab === "songs" && (
+                <Button size="sm" variant="outline">
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Song
+                </Button>
+              )}
+              {activeTab === "media" && (
+                <Button size="sm" variant="outline">
+                  <Plus className="h-4 w-4 mr-1" />
+                  Import Media
+                </Button>
+              )}
             </div>
-          </div>
-          <div className="bg-card rounded-xl shadow-lg p-6 flex-1 flex flex-col">
-            <h2 className="text-lg font-bold mb-4 tracking-wide text-foreground">
-              SCHEDULE
-            </h2>
-            <div className="flex-1 flex items-center justify-center text-muted-foreground text-base font-medium text-center">
-              Your presentation queue is empty.
-              <br />
-              Add items from the library to get started
+          }
+        />
+      )}
+
+      {/* Responsive Layout */}
+      <ResponsiveLayout onSelectItem={setSelectedItem}>
+        <ResponsiveStack
+          direction={{ mobile: "col", tablet: "row", desktop: "row" }}
+          className="h-full"
+          gap="md"
+        >
+          {/* Main Content */}
+          <main
+            id="main-content"
+            className="flex-1 bg-background overflow-y-auto"
+            role="main"
+            aria-label="Main application content"
+            tabIndex={-1}
+          >
+            <ResponsiveContainer className={isMobile ? "p-4" : "p-6"}>
+              {renderActiveContent()}
+            </ResponsiveContainer>
+          </main>
+
+          {/* Right Panel - Responsive */}
+          {!isMobile && (
+            <div
+              className={`bg-background border-l border-border flex flex-col gap-6 p-6 h-full ${
+                isTablet
+                  ? "w-[300px] min-w-[280px]"
+                  : "w-[400px] min-w-[320px] max-w-[480px]"
+              }`}
+            >
+              <div className="bg-card rounded-xl shadow-lg p-6 flex-1 flex flex-col">
+                <h2 className="text-lg font-bold mb-4 tracking-wide text-foreground">
+                  PREVIEW
+                </h2>
+                <div className="flex-1 flex flex-col items-stretch justify-stretch">
+                  <Preview />
+                </div>
+              </div>
+              <div className="bg-card rounded-xl shadow-lg p-6 flex-1 flex flex-col">
+                <h2 className="text-lg font-bold mb-4 tracking-wide text-foreground">
+                  SCHEDULE
+                </h2>
+                <div className="flex-1 flex items-center justify-center text-muted-foreground text-base font-medium text-center">
+                  Your presentation queue is empty.
+                  <br />
+                  Add items from the library to get started
+                </div>
+              </div>
+              <div className="bg-card rounded-xl shadow-lg p-6 flex flex-col">
+                <h2 className="text-lg font-bold mb-4 tracking-wide text-foreground">
+                  LIVE
+                </h2>
+                <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground text-base font-medium">
+                  Nothing is live
+                  <Button className="mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-lg font-semibold text-base hover:bg-primary/90 transition-all duration-200 shadow-md">
+                    Start Presentation
+                  </Button>
+                </div>
+              </div>
             </div>
-          </div>
-          <div className="bg-card rounded-xl shadow-lg p-6 flex flex-col">
-            <h2 className="text-lg font-bold mb-4 tracking-wide text-foreground">
-              LIVE
-            </h2>
-            <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground text-base font-medium">
-              Nothing is live
-              <Button className="mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-lg font-semibold text-base hover:bg-primary/90 transition-all duration-200 shadow-md">
-                Start Presentation
-              </Button>
-            </div>
-          </div>
+          )}
+        </ResponsiveStack>
+      </ResponsiveLayout>
+
+      {/* Mobile Bottom Panel */}
+      {isMobile && (
+        <div className="bg-card border-t border-border p-4">
+          <ResponsiveStack
+            direction={{ mobile: "row" }}
+            gap="sm"
+            justify="between"
+          >
+            <Button size="sm" variant="outline" className="flex-1">
+              Preview
+            </Button>
+            <Button size="sm" variant="outline" className="flex-1">
+              Schedule
+            </Button>
+            <Button size="sm" className="flex-1">
+              Go Live
+            </Button>
+          </ResponsiveStack>
         </div>
-      </div>
+      )}
     </div>
   );
 }
 
 function App() {
   return (
-    <MediaCacheProvider>
-      <MainAppContent />
-    </MediaCacheProvider>
+    <ThemeProvider>
+      <MediaCacheProvider>
+        <MainAppContent />
+      </MediaCacheProvider>
+    </ThemeProvider>
   );
 }
 
