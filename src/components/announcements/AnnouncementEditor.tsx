@@ -4,6 +4,7 @@ import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
+import { Label } from "../ui/label";
 import {
   Plus,
   Trash2,
@@ -12,6 +13,13 @@ import {
   Image as ImageIcon,
   Type,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 export interface Slide {
   id: string;
@@ -33,12 +41,111 @@ interface SlideElement {
   textAlign?: "left" | "center" | "right";
 }
 
-interface AnnouncementEditorProps {
+// Form-based editor interface
+interface AnnouncementFormEditorProps {
+  title: string;
+  content: string;
+  category: string;
+  status: "draft" | "published";
+  onTitleChange: (title: string) => void;
+  onContentChange: (content: string) => void;
+  onCategoryChange: (category: string) => void;
+  onStatusChange: (status: "draft" | "published") => void;
+}
+
+// Slide-based editor interface
+interface AnnouncementSlideEditorProps {
   onSave: (slides: Slide[]) => void;
   initialSlides?: Slide[];
 }
 
-export const AnnouncementEditor: React.FC<AnnouncementEditorProps> = ({
+type AnnouncementEditorProps = AnnouncementFormEditorProps | AnnouncementSlideEditorProps;
+
+// Type guard to check if props are for form editor
+function isFormEditorProps(props: AnnouncementEditorProps): props is AnnouncementFormEditorProps {
+  return 'title' in props;
+}
+
+// Form-based editor component
+const AnnouncementFormEditor: React.FC<AnnouncementFormEditorProps> = ({
+  title,
+  content,
+  category,
+  status,
+  onTitleChange,
+  onContentChange,
+  onCategoryChange,
+  onStatusChange,
+}) => {
+  return (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="title" className="text-white">
+          Title
+        </Label>
+        <Input
+          id="title"
+          value={title}
+          onChange={(e) => onTitleChange(e.target.value)}
+          placeholder="Enter announcement title"
+          className="bg-[#2D3748] border-[#4A5568] text-white placeholder-[#A0AEC0]"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="content" className="text-white">
+          Content
+        </Label>
+        <Textarea
+          id="content"
+          value={content}
+          onChange={(e) => onContentChange(e.target.value)}
+          placeholder="Enter announcement content"
+          rows={4}
+          className="bg-[#2D3748] border-[#4A5568] text-white placeholder-[#A0AEC0] resize-none"
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="category" className="text-white">
+            Category
+          </Label>
+          <Select value={category} onValueChange={onCategoryChange}>
+            <SelectTrigger className="bg-[#2D3748] border-[#4A5568] text-white">
+              <SelectValue placeholder="Select category" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#2D3748] border-[#4A5568] text-white">
+              <SelectItem value="Events">Events</SelectItem>
+              <SelectItem value="Announcements">Announcements</SelectItem>
+              <SelectItem value="News">News</SelectItem>
+              <SelectItem value="Updates">Updates</SelectItem>
+              <SelectItem value="Community">Community</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="status" className="text-white">
+            Status
+          </Label>
+          <Select value={status} onValueChange={onStatusChange}>
+            <SelectTrigger className="bg-[#2D3748] border-[#4A5568] text-white">
+              <SelectValue placeholder="Select status" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#2D3748] border-[#4A5568] text-white">
+              <SelectItem value="draft">Draft</SelectItem>
+              <SelectItem value="published">Published</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Slide-based editor component
+const AnnouncementSlideEditor: React.FC<AnnouncementSlideEditorProps> = ({
   onSave,
   initialSlides = [],
 }) => {
@@ -198,7 +305,7 @@ export const AnnouncementEditor: React.FC<AnnouncementEditorProps> = ({
         {" "}
         <CardContent className="relative min-h-[300px] flex flex-col items-center justify-center">
           {" "}
-          {activeSlide.elements.map((el, idx) => (
+          {(activeSlide?.elements || []).map((el, idx) => (
             <div key={el.id} className="mb-4 w-full flex flex-col items-center">
               {" "}
               {el.type === "text" ? (
@@ -269,10 +376,18 @@ export const AnnouncementEditor: React.FC<AnnouncementEditorProps> = ({
           onClick={() => onSave(slides)}
           className="bg-[#3182CE] text-white hover:bg-[#2563EB]"
         >
-          {" "}
-          Save Announcement{" "}
-        </Button>{" "}
-      </div>{" "}
+          Save Announcement
+        </Button>
+      </div>
     </div>
   );
+};
+
+// Main AnnouncementEditor component that handles both interfaces
+export const AnnouncementEditor: React.FC<AnnouncementEditorProps> = (props) => {
+  if (isFormEditorProps(props)) {
+    return <AnnouncementFormEditor {...props} />;
+  } else {
+    return <AnnouncementSlideEditor {...props} />;
+  }
 };

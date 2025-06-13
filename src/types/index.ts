@@ -82,38 +82,46 @@ export interface ScheduledItem {
   transition?: "fade" | "slide" | "zoom";
 }
 
-export interface Slide {
-  id: string; // Changed to string for better UUID support
-  title: string;
-  content: string;
-  type: ContentType;
-  thumbnail?: string;
-  duration?: number; // Duration in seconds for auto-advance
-  transition?: SlideTransition;
-  backgroundColor?: string;
-  backgroundImage?: string; // Kept for backward compatibility
-  textColor?: string;
+export interface SlideElement {
+  id: string;
+  type: "text" | "image" | "video" | "audio" | "bible" | "song";
+  content?: string;
+  src?: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
   fontSize?: number;
   fontFamily?: string;
-  textAlign?: "left" | "center" | "right" | "justify";
-  order: number; // For slide ordering
-  notes?: string; // Speaker notes
+  fontColor?: string;
+  textAlign?: "left" | "center" | "right";
+}
+
+export interface Slide {
+  id: string;
+  title: string;
+  content: string;
+  type: "presentation";
+  order: number;
   createdAt: Date;
   updatedAt: Date;
-  // New media support properties
-  mediaElements?: MediaElement[]; // Array of media elements on this slide
-  backgroundMedia?: MediaElement; // Dedicated background media (replaces backgroundImage)
+  backgroundColor: string;
+  textColor: string;
+  fontSize: number;
+  fontFamily: string;
+  textAlign: "left" | "center" | "right";
+  elements: SlideElement[];
+  transition?: SlideTransition;
+  duration?: number;
+  thumbnail?: string;
+  notes?: string;
+  mediaElements?: SlideMediaElement[];
   overlaySettings?: {
-    textOverlay?: boolean; // Whether text content overlays media
-    textBackground?: {
+    textOverlay: boolean;
+    textBackground: {
       enabled: boolean;
       color?: string;
-      opacity?: number; // 0-1
-      blur?: number; // Background blur for text readability
-    };
-    safeArea?: {
-      enabled: boolean;
-      padding: number; // Padding percentage for text safe area
+      opacity?: number;
     };
   };
 }
@@ -123,6 +131,7 @@ export interface MediaElement {
   mediaId?: string; // Reference to MediaItem.id
   name?: string; // Added name property
   url: string; // Added url property
+  altText?: string; // Alt text for accessibility
   type: "image" | "video" | "audio";
   layer?: number; // Z-index for layering (0 = background, higher = foreground)
   position: {
@@ -217,6 +226,8 @@ export interface PresentationContentItem extends ContentItem {
 export interface PresentationSettings {
   autoAdvance: boolean;
   defaultSlideDuration: number; // Default duration in seconds
+  theme: string;
+  transition: string;
   loopPresentation: boolean;
   showSlideNumbers: boolean;
   showProgressBar: boolean;
@@ -249,12 +260,35 @@ export interface PresentationTemplate {
   description: string;
   category: string;
   thumbnail: string;
-  slides: Partial<Slide>[]; // Template slides with default content
+  image?: string;
+  slides: Partial<Slide>[];
   settings: Partial<PresentationSettings>;
   tags: string[];
   isBuiltIn: boolean;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface SlideMediaElement {
+  id: string;
+  type: "image" | "video" | "audio";
+  url: string;
+  name?: string;
+  position: {
+    x: number;
+    y: number;
+  };
+  size?: {
+    width: number;
+    height: number;
+  };
+  opacity: number;
+  layer: number;
+  playback?: {
+    autoplay: boolean;
+    loop: boolean;
+    volume: number;
+  };
 }
 
 // Union type for items that can be selected

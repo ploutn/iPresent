@@ -15,11 +15,9 @@ interface PresentationViewProps {
 }
 
 export function PresentationView({ className = "" }: PresentationViewProps) {
-  const { selectedItem, items } = useContentStore();
   const { stageDisplayConfig } = useStageDisplay();
-  const { currentPresentation } = usePresentationStore();
-  const [nextItem, setNextItem] = useState<ContentItem | null>(null);
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const { currentPresentation, currentSlideIndex, nextSlide, previousSlide } =
+    usePresentationStore();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const presentationRef = useRef<HTMLDivElement>(null);
   const {
@@ -28,29 +26,6 @@ export function PresentationView({ className = "" }: PresentationViewProps) {
     completeTransition,
     clearTransitionQueue,
   } = useSlideTransitions();
-
-  // Handle slide navigation for presentations
-  useEffect(() => {
-    if (currentPresentation?.slides) {
-      const slides = currentPresentation.slides;
-      if (currentSlideIndex < slides.length - 1) {
-        setNextItem(slides[currentSlideIndex + 1]);
-      } else {
-        setNextItem(null);
-      }
-    } else if (selectedItem && items.length > 1) {
-      const currentIndex = items.findIndex(
-        (item) => item.id === selectedItem.id
-      );
-      if (currentIndex !== -1 && currentIndex < items.length - 1) {
-        setNextItem(items[currentIndex + 1]);
-      } else {
-        setNextItem(null);
-      }
-    } else {
-      setNextItem(null);
-    }
-  }, [selectedItem, items, currentPresentation, currentSlideIndex]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -61,11 +36,11 @@ export function PresentationView({ className = "" }: PresentationViewProps) {
         case "ArrowRight":
         case " ": // Spacebar
           event.preventDefault();
-          nextSlide();
+          nextSlide(startTransition);
           break;
         case "ArrowLeft":
           event.preventDefault();
-          previousSlide();
+          previousSlide(startTransition);
           break;
         case "Escape":
           event.preventDefault();
@@ -81,29 +56,9 @@ export function PresentationView({ className = "" }: PresentationViewProps) {
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [currentPresentation, currentSlideIndex]);
-
-  const nextSlide = useCallback(() => {
-    if (!currentPresentation?.slides) return;
-
-    const slides = currentPresentation.slides;
-    if (currentSlideIndex < slides.length - 1) {
-      const nextSlideData = slides[currentSlideIndex + 1];
-      startTransition(nextSlideData);
-    }
-  }, [currentPresentation, currentSlideIndex, startTransition]);
-
-  const previousSlide = useCallback(() => {
-    if (!currentPresentation?.slides) return;
-
-    if (currentSlideIndex > 0) {
-      setCurrentSlideIndex((prev) => prev - 1);
-      clearTransitionQueue();
-    }
-  }, [currentSlideIndex, clearTransitionQueue]);
+  }, [currentPresentation, nextSlide, previousSlide, startTransition]);
 
   const handleTransitionComplete = useCallback(() => {
-    setCurrentSlideIndex((prev) => prev + 1);
     completeTransition();
   }, [completeTransition]);
 
@@ -146,10 +101,8 @@ export function PresentationView({ className = "" }: PresentationViewProps) {
   }, []);
 
   // Determine current content to display
-  const currentContent =
-    currentPresentation?.slides?.[currentSlideIndex] || selectedItem;
-  const nextContent =
-    currentPresentation?.slides?.[currentSlideIndex + 1] || nextItem;
+  const currentContent = currentPresentation?.slides?.[currentSlideIndex];
+  const nextContent = currentPresentation?.slides?.[currentSlideIndex + 1];
 
   if (!currentContent) {
     return (
@@ -166,9 +119,9 @@ export function PresentationView({ className = "" }: PresentationViewProps) {
   }
 
   const renderContent = () => {
-    switch (selectedItem.type) {
+    switch (currentContent.type) {
       case "image": {
-        const mediaItem = selectedItem as Media;
+        const mediaItem = currentContent as Media;
         return (
           <img
             src={mediaItem.url}
@@ -179,7 +132,7 @@ export function PresentationView({ className = "" }: PresentationViewProps) {
       }
 
       case "video": {
-        const mediaItem = selectedItem as Media;
+        const mediaItem = currentContent as Media;
         return (
           <video
             src={mediaItem.url}
@@ -191,7 +144,7 @@ export function PresentationView({ className = "" }: PresentationViewProps) {
       }
 
       case "song": {
-        const songItem = selectedItem as Song;
+        const songItem = currentContent as Song;
         return (
           <div className="p-8 max-h-full overflow-auto">
             <h2 className="text-3xl font-semibold mb-4">{songItem.title}</h2>
@@ -209,10 +162,10 @@ export function PresentationView({ className = "" }: PresentationViewProps) {
         return (
           <div className="p-8 max-h-full overflow-auto">
             <h2 className="text-3xl font-semibold mb-6">
-              {selectedItem.title}
+              {currentContent.title}
             </h2>
             <div className="whitespace-pre-wrap text-2xl leading-relaxed">
-              {selectedItem.content}
+              {currentContent.content}
             </div>
           </div>
         );
@@ -248,7 +201,7 @@ export function PresentationView({ className = "" }: PresentationViewProps) {
       {!isFullscreen && currentPresentation?.slides && (
         <div className="absolute bottom-4 left-4 flex items-center space-x-2 bg-black/50 rounded-lg p-2">
           <button
-            onClick={previousSlide}
+            onClick={() => previousSlide(startTransition)}
             disabled={currentSlideIndex === 0}
             className="px-3 py-1 bg-white/20 hover:bg-white/30 disabled:opacity-50 disabled:cursor-not-allowed rounded text-white text-sm"
           >
@@ -258,7 +211,7 @@ export function PresentationView({ className = "" }: PresentationViewProps) {
             {currentSlideIndex + 1} / {currentPresentation.slides.length}
           </span>
           <button
-            onClick={nextSlide}
+            onClick={() => nextSlide(startTransition)}
             disabled={
               currentSlideIndex === currentPresentation.slides.length - 1
             }

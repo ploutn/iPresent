@@ -24,7 +24,7 @@ import { Badge } from "../ui/badge";
 import {
   Sparkles,
   Palette,
-  Shadow,
+  Droplets,
   Type,
   Zap,
   RotateCcw,
@@ -225,17 +225,20 @@ export function TextEffects({
   }, []);
 
   // Generate CSS from effect properties
+  // Replace the generateCSS function:
   const generateCSS = (effect: TextEffect): string => {
     const styles: string[] = [];
 
     Object.entries(effect.cssProperties).forEach(([property, value]) => {
       if (property.startsWith(":")) {
         // Pseudo-selector
-        styles.push(
-          `${property} { ${Object.entries(value as Record<string, string>)
-            .map(([p, v]) => `${p}: ${v}`)
-            .join("; ")} }`
-        );
+        if (typeof value === "object" && value !== null) {
+          styles.push(
+            `${property} { ${Object.entries(value)
+              .map(([p, v]) => `${p}: ${v}`)
+              .join("; ")} }`
+          );
+        }
       } else {
         styles.push(`${property}: ${value}`);
       }

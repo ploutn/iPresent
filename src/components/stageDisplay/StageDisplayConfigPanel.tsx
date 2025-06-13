@@ -43,14 +43,21 @@ import {
   Save,
   Download,
   Upload,
+  Plus,
+  Trash2,
+  Copy,
 } from "lucide-react";
+import { Textarea } from "../ui/textarea";
+import { v4 as uuidv4 } from "uuid";
 
 interface StageDisplayConfigPanelProps {
   config: StageDisplayConfig;
   availableDisplays: DisplayDevice[];
-  onConfigChange: (config: StageDisplayConfig) => void;
+  onConfigChange: (config: Partial<StageDisplayConfig>) => void;
   onExportConfig: () => void;
   onImportConfig: (file: File) => void;
+  exportTemplate: (templateId: string) => void;
+  importTemplate: (template: StageDisplayTemplate) => string;
 }
 
 interface DisplaySettings {
@@ -80,6 +87,8 @@ export function StageDisplayConfigPanel({
   onConfigChange,
   onExportConfig,
   onImportConfig,
+  exportTemplate,
+  importTemplate,
 }: StageDisplayConfigPanelProps) {
   const [displaySettings, setDisplaySettings] = useState<DisplaySettings>({
     resolution: "1920x1080",
@@ -103,6 +112,15 @@ export function StageDisplayConfigPanel({
   });
 
   const [activeTab, setActiveTab] = useState("display");
+  const [selectedTemplateId, setSelectedTemplateId] = useState(
+    config.activeTemplateId
+  );
+  const [editingElement, setEditingElement] =
+    useState<StageDisplayElement | null>(null);
+
+  const activeTemplate = config.templates.find(
+    (t) => t.id === selectedTemplateId
+  );
 
   const handleDisplaySettingChange = (
     key: keyof DisplaySettings,
@@ -136,6 +154,144 @@ export function StageDisplayConfigPanel({
     const file = event.target.files?.[0];
     if (file) {
       onImportConfig(file);
+    }
+  };
+
+  const handleTemplateChange = (templateId: string) => {
+    setSelectedTemplateId(templateId);
+    onConfigChange({
+      ...config,
+      activeTemplateId: templateId,
+    });
+  };
+
+  const handleCreateTemplate = () => {
+    const newTemplate: StageDisplayTemplate = {
+      id: uuidv4(),
+      name: "New Template",
+      elements: [],
+    };
+
+    onConfigChange({
+      ...config,
+      templates: [...config.templates, newTemplate],
+      activeTemplateId: newTemplate.id,
+    });
+
+    setSelectedTemplateId(newTemplate.id);
+  };
+
+  const handleDuplicateTemplate = (templateId: string) => {
+    const templateToDuplicate = config.templates.find(
+      (t) => t.id === templateId
+    );
+    if (!templateToDuplicate) return;
+
+    const newTemplate: StageDisplayTemplate = {
+      ...templateToDuplicate,
+      id: uuidv4(),
+      name: `${templateToDuplicate.name} (Copy)`,
+    };
+
+    onConfigChange({
+      ...config,
+      templates: [...config.templates, newTemplate],
+      activeTemplateId: newTemplate.id,
+    });
+
+    setSelectedTemplateId(newTemplate.id);
+  };
+
+  const handleDeleteTemplate = (templateId: string) => {
+    if (config.templates.length <= 1) return;
+
+    const newTemplates = config.templates.filter((t) => t.id !== templateId);
+    const newActiveId =
+      templateId === config.activeTemplateId
+        ? newTemplates[0].id
+        : config.activeTemplateId;
+
+    onConfigChange({
+      ...config,
+      templates: newTemplates,
+      activeTemplateId: newActiveId,
+    });
+
+    setSelectedTemplateId(newActiveId);
+  };
+
+  const handleTemplateNameChange = (templateId: string, newName: string) => {
+    onConfigChange({
+      ...config,
+      templates: config.templates.map((t) =>
+        t.id === templateId ? { ...t, name: newName } : t
+      ),
+    });
+  };
+
+  const handleAddElement = (type: StageDisplayElement["type"]) => {
+    if (!activeTemplate) return;
+
+    const newElement: StageDisplayElement = {
+      id: uuidv4(),
+      type,
+      x: 0,
+      y: 0,
+      width: 200,
+      height: 100,
+      isVisible: true,
+    };
+
+    onConfigChange({
+      ...config,
+      templates: config.templates.map((t) =>
+        t.id === activeTemplate.id
+          ? { ...t, elements: [...t.elements, newElement] }
+          : t
+      ),
+    });
+
+    setEditingElement(newElement);
+  };
+
+  const handleUpdateElement = (
+    elementId: string,
+    updates: Partial<StageDisplayElement>
+  ) => {
+    if (!activeTemplate) return;
+
+    onConfigChange({
+      ...config,
+      templates: config.templates.map((t) =>
+        t.id === activeTemplate.id
+          ? {
+              ...t,
+              elements: t.elements.map((e) =>
+                e.id === elementId ? { ...e, ...updates } : e
+              ),
+            }
+          : t
+      ),
+    });
+  };
+
+  const handleDeleteElement = (elementId: string) => {
+    if (!activeTemplate) return;
+
+    onConfigChange({
+      ...config,
+      templates: config.templates.map((t) =>
+        t.id === activeTemplate.id
+          ? {
+              ...t,
+              elements: t.elements.filter((e) => e.id !== elementId),
+            }
+          : t
+      ),
+    });
+
+    if (editingElement?.id === elementId) {
+      setEditingElement(null);
     }
   };
 
@@ -580,6 +736,186 @@ export function StageDisplayConfigPanel({
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Templates Tab */}
+      <TabsContent value="templates" className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold">Templates</h3>
+          <Button onClick={handleCreateTemplate}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Template
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-4">
+            <Select
+              value={selectedTemplateId}
+              onValueChange={handleTemplateChange}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a template" />
+              </SelectTrigger>
+              <SelectContent>
+                {config.templates.map((template) => (
+                  <SelectItem key={template.id} value={template.id}>
+                    {template.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {activeTemplate && (
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="template-name">Template Name</Label>
+                  <Input
+                    id="template-name"
+                    value={activeTemplate.name}
+                    onChange={(e) =>
+                      handleTemplateNameChange(
+                        activeTemplate.id,
+                        e.target.value
+                      )
+                    }
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => handleDuplicateTemplate(activeTemplate.id)}
+                  >
+                    <Copy className="h-4 w-4 mr-2" />
+                    Duplicate
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => exportTemplate(activeTemplate.id)}
+                  >
+                    Export
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => handleDeleteTemplate(activeTemplate.id)}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            <h4 className="font-medium">Elements</h4>
+            {activeTemplate?.elements.map((element) => (
+              <div key={element.id} className="p-4 border rounded-lg space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{element.type}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteElement(element.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>X Position</Label>
+                    <Input
+                      type="number"
+                      value={element.x}
+                      onChange={(e) =>
+                        handleUpdateElement(element.id, {
+                          x: Number(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label>Y Position</Label>
+                    <Input
+                      type="number"
+                      value={element.y}
+                      onChange={(e) =>
+                        handleUpdateElement(element.id, {
+                          y: Number(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label>Width</Label>
+                    <Input
+                      type="number"
+                      value={element.width}
+                      onChange={(e) =>
+                        handleUpdateElement(element.id, {
+                          width: Number(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label>Height</Label>
+                    <Input
+                      type="number"
+                      value={element.height}
+                      onChange={(e) =>
+                        handleUpdateElement(element.id, {
+                          height: Number(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Text Content</Label>
+                  <Textarea
+                    value={element.text || ""}
+                    onChange={(e) =>
+                      handleUpdateElement(element.id, { text: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label>Visibility</Label>
+                  <Select
+                    value={element.isVisible ? "visible" : "hidden"}
+                    onValueChange={(value) =>
+                      handleUpdateElement(element.id, {
+                        isVisible: value === "visible",
+                      })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="visible">Visible</SelectItem>
+                      <SelectItem value="hidden">Hidden</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            ))}
+
+            <Button
+              variant="outline"
+              onClick={() => handleAddElement("customText")}
+              className="w-full"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Element
+            </Button>
+          </div>
+        </div>
+      </TabsContent>
 
       {/* Action Buttons */}
       <div className="flex justify-end gap-2">

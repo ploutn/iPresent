@@ -9,7 +9,7 @@ import {
 } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { ScrollArea } from "../ui/scroll-area";
-import { Separator } from "../ui/separator";
+import { Separator } from "../ui/seperator";
 import { Alert, AlertDescription } from "../ui/alert";
 import {
   CheckCircle,

@@ -7,7 +7,6 @@ import {
   StageDisplayElement,
 } from "../types/stageDisplay";
 import { defaultTemplates } from "../components/StageDisplayTemplates";
-// Removed duplicate import: import { v4 as uuidv4 } from "uuid"; // Added import for uuid
 
 export function useStageDisplay() {
   const [stageDisplayConfig, setStageDisplayConfig] =
@@ -56,6 +55,58 @@ export function useStageDisplay() {
       ...stageDisplayConfig,
       activeTemplateId: templateId,
     });
+  };
+
+  // Update stage display config
+  const updateStageDisplayConfig = (config: Partial<StageDisplayConfig>) => {
+    setStageDisplayConfig((prev) => ({
+      ...prev,
+      ...config,
+    }));
+  };
+
+  // Export template
+  const exportTemplate = (templateId: string) => {
+    const template = stageDisplayConfig.templates.find(
+      (t) => t.id === templateId
+    );
+    if (!template) return;
+
+    const blob = new Blob([JSON.stringify(template, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${template.name}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // Import template
+  const importTemplate = (template: StageDisplayTemplate) => {
+    const newTemplate = {
+      ...template,
+      id: uuidv4(),
+      isDefault: false,
+    };
+
+    setStageDisplayConfig((prev) => ({
+      ...prev,
+      templates: [...prev.templates, newTemplate],
+    }));
+
+    return newTemplate.id;
+  };
+
+  // Set target display ID
+  const setTargetDisplayId = (displayId: string) => {
+    setStageDisplayConfig((prev) => ({
+      ...prev,
+      targetDisplayId: displayId,
+    }));
   };
 
   // Create a new template
@@ -140,15 +191,15 @@ export function useStageDisplay() {
       return undefined;
     }
 
-    const newId = uuidv4(); // Ensure uuidv4 is imported
+    const newId = uuidv4();
     const newTemplate: StageDisplayTemplate = {
       ...templateToDuplicate,
       id: newId,
       name: `${templateToDuplicate.name} (Copy)`,
       isDefault: false,
       elements: templateToDuplicate.elements.map((el) => ({
-        ...JSON.parse(JSON.stringify(el)), // Deep copy individual element
-        isVisible: el.isVisible !== false, // Set isVisible to true if undefined or true, false if false
+        ...JSON.parse(JSON.stringify(el)),
+        isVisible: el.isVisible !== false,
       })),
     };
 
@@ -169,24 +220,19 @@ export function useStageDisplay() {
     });
   };
 
-  // Set target display for stage display
-  const setTargetDisplay = (displayId: string) => {
-    setStageDisplayConfig({
-      ...stageDisplayConfig,
-      targetDisplayId: displayId,
-    });
-  };
-
   return {
     stageDisplayConfig,
     activeTemplate,
     setActiveTemplate,
+    updateStageDisplayConfig,
+    exportTemplate,
+    importTemplate,
+    setTargetDisplayId,
     createTemplate,
     saveTemplate,
     deleteTemplate,
-    renameTemplate, // Added
-    duplicateTemplate, // Added
+    renameTemplate,
+    duplicateTemplate,
     toggleStageDisplay,
-    setTargetDisplay,
   };
 }

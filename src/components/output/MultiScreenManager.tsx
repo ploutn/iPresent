@@ -52,8 +52,8 @@ import {
 interface MultiScreenManagerProps {
   availableDisplays: DisplayDevice[];
   outputSettings: OutputSettings;
-  onOutputSettingsChange: (settings: OutputSettings) => void;
-  onRefreshDisplays: () => void;
+  updateOutputSettings: (settings: Partial<OutputSettings>) => void;
+  refreshDisplays: () => void;
 }
 
 interface DisplayProfile {
@@ -164,8 +164,8 @@ function getDisplayStatus(display: DisplayDevice) {
 export function MultiScreenManager({
   availableDisplays,
   outputSettings,
-  onOutputSettingsChange,
-  onRefreshDisplays,
+  updateOutputSettings,
+  refreshDisplays,
 }: MultiScreenManagerProps) {
   const [selectedProfile, setSelectedProfile] = useState<string>("single");
   const [calibrationSettings, setCalibrationSettings] = useState<
@@ -193,21 +193,30 @@ export function MultiScreenManager({
     const profile = DISPLAY_PROFILES.find((p) => p.id === profileId);
     if (profile) {
       // Apply profile settings
-      onOutputSettingsChange({
+      updateOutputSettings({
         ...outputSettings,
         // Update settings based on profile
       });
     }
   };
 
-  const handleDisplayToggle = (displayId: string, isActive: boolean) => {
-    const updatedDisplays = availableDisplays.map((display) =>
-      display.id === displayId ? { ...display, isActive } : display
-    );
+  const handleDisplayChange = (displayId: string) => {
+    updateOutputSettings({ activeDisplay: displayId });
+  };
 
-    onOutputSettingsChange({
-      ...outputSettings,
-      externalDisplays: updatedDisplays,
+  const handleResolutionChange = (displayId: string, resolution: string) => {
+    updateOutputSettings({
+      externalDisplays: outputSettings.externalDisplays.map((display) =>
+        display.id === displayId ? { ...display, resolution } : display
+      ),
+    });
+  };
+
+  const handleDisplayToggle = (displayId: string, isActive: boolean) => {
+    updateOutputSettings({
+      externalDisplays: outputSettings.externalDisplays.map((display) =>
+        display.id === displayId ? { ...display, isActive } : display
+      ),
     });
   };
 
@@ -238,6 +247,31 @@ export function MultiScreenManager({
     console.log(`Testing display ${displayId}`);
   };
 
+  const handleFullscreenToggle = () => {
+    const presentationElement = document.getElementById(
+      "presentation-container"
+    );
+    if (!document.fullscreenElement && presentationElement) {
+      presentationElement
+        .requestFullscreen()
+        .then(() => {
+          updateOutputSettings({ fullscreen: true });
+        })
+        .catch((err) => {
+          console.error("Error attempting to enable fullscreen:", err);
+        });
+    } else if (document.fullscreenElement) {
+      document
+        .exitFullscreen()
+        .then(() => {
+          updateOutputSettings({ fullscreen: false });
+        })
+        .catch((err) => {
+          console.error("Error attempting to exit fullscreen:", err);
+        });
+    }
+  };
+
   return (
     <div className="w-full max-w-6xl mx-auto p-6 space-y-6">
       {/* Header */}
@@ -248,7 +282,7 @@ export function MultiScreenManager({
             Manage and configure multiple display outputs
           </p>
         </div>
-        <Button onClick={onRefreshDisplays} variant="outline">
+        <Button onClick={refreshDisplays} variant="outline">
           <RefreshCw className="h-4 w-4 mr-2" />
           Refresh Displays
         </Button>
@@ -335,7 +369,12 @@ export function MultiScreenManager({
                               <div className="space-y-4">
                                 <div className="space-y-2">
                                   <Label>Resolution</Label>
-                                  <Select defaultValue={display.resolution}>
+                                  <Select
+                                    value={display.resolution}
+                                    onValueChange={(value) =>
+                                      handleResolutionChange(display.id, value)
+                                    }
+                                  >
                                     <SelectTrigger>
                                       <SelectValue />
                                     </SelectTrigger>
@@ -641,6 +680,27 @@ export function MultiScreenManager({
           </Card>
         </TabsContent>
       </Tabs>
+
+      <div className="flex items-center justify-between">
+        <Label htmlFor="fullscreen">Fullscreen Mode</Label>
+        <Button
+          variant="outline"
+          onClick={handleFullscreenToggle}
+          className="flex items-center gap-2"
+        >
+          {outputSettings.fullscreen ? (
+            <>
+              <Minimize className="h-4 w-4" />
+              Exit Fullscreen
+            </>
+          ) : (
+            <>
+              <Maximize className="h-4 w-4" />
+              Enter Fullscreen
+            </>
+          )}
+        </Button>
+      </div>
     </div>
   );
 }

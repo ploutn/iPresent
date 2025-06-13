@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StageDisplayTemplate,
   StageDisplayElement,
@@ -300,6 +300,14 @@ export function StageDisplayTemplateManager({
   onTemplateExport,
   onTemplateImport,
 }: StageDisplayTemplateManagerProps) {
+  const allTemplates = [
+    ...DEFAULT_TEMPLATES,
+    ...(templates || []).filter(
+      (userTemplate) =>
+        !DEFAULT_TEMPLATES.find((dt) => dt.id === userTemplate.id)
+    ),
+  ]; // Prevent duplicates if user saves a template with a default ID
+
   const [selectedTemplate, setSelectedTemplate] =
     useState<StageDisplayTemplate | null>(
       () => allTemplates.find((t) => t.id === activeTemplateId) || null
@@ -309,14 +317,6 @@ export function StageDisplayTemplateManager({
     useState<StageDisplayElement | null>(null);
   const [newTemplateName, setNewTemplateName] = useState("");
   const [newTemplateDescription, setNewTemplateDescription] = useState(""); // For description
-
-  const allTemplates = [
-    ...DEFAULT_TEMPLATES,
-    ...templates.filter(
-      (userTemplate) =>
-        !DEFAULT_TEMPLATES.find((dt) => dt.id === userTemplate.id)
-    ),
-  ]; // Prevent duplicates if user saves a template with a default ID
 
   const activeTemplate = allTemplates.find((t) => t.id === activeTemplateId);
 
@@ -390,7 +390,7 @@ export function StageDisplayTemplateManager({
       };
     }
 
-    const updatedElements = selectedTemplate.elements.map((el) =>
+    const updatedElements = selectedTemplate.elements?.map((el) =>
       el.id === mergedElement.id ? mergedElement : el
     );
     const updatedTemplate = { ...selectedTemplate, elements: updatedElements };
@@ -564,6 +564,11 @@ export function StageDisplayTemplateManager({
                         +{template.elements.length - 5} more
                       </div>
                     )}
+                    {template.elements.length === 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        No elements in this template. Add one below!
+                      </p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -625,36 +630,34 @@ export function StageDisplayTemplateManager({
                           selectedTemplate.backgroundColor || "#333",
                       }}
                     >
-                      {selectedTemplate.elements
-                        .filter((el) => el.isVisible)
-                        .map((element) => (
-                          <div
-                            key={element.id}
-                            className={`absolute border rounded cursor-pointer flex items-center justify-center text-xs p-1 overflow-hidden
+                      {(selectedTemplate?.elements || []).map((element) => (
+                        <div
+                          key={element.id}
+                          className={`absolute border rounded cursor-pointer flex items-center justify-center text-xs p-1 overflow-hidden
                                       ${
                                         editingElement?.id === element.id
                                           ? "border-primary ring-2 ring-primary bg-primary/20"
                                           : "border-muted-foreground/30 bg-muted-foreground/10 hover:bg-muted-foreground/20"
                                       }`}
-                            style={{
-                              left: `${(element.x / 1920) * 100}%`, // Assuming 1920 logical width
-                              top: `${(element.y / 1080) * 100}%`, // Assuming 1080 logical height
-                              width: `${(element.width / 1920) * 100}%`,
-                              height: `${(element.height / 1080) * 100}%`,
-                              color:
-                                (element.style?.color as string) || "inherit",
-                              fontSize:
-                                (element.style?.fontSize as string) || "10px",
-                            }}
-                            onClick={() => setEditingElement(element)}
-                            title={`Edit ${element.type}`}
-                          >
-                            {getElementIcon(element.type)}
-                            <span className="ml-1 truncate">
-                              {element.type.replace(/([A-Z])/g, " $1").trim()}
-                            </span>
-                          </div>
-                        ))}
+                          style={{
+                            left: `${(element.x / 1920) * 100}%`, // Assuming 1920 logical width
+                            top: `${(element.y / 1080) * 100}%`, // Assuming 1080 logical height
+                            width: `${(element.width / 1920) * 100}%`,
+                            height: `${(element.height / 1080) * 100}%`,
+                            color:
+                              (element.style?.color as string) || "inherit",
+                            fontSize:
+                              (element.style?.fontSize as string) || "10px",
+                          }}
+                          onClick={() => setEditingElement(element)}
+                          title={`Edit ${element.type}`}
+                        >
+                          {getElementIcon(element.type)}
+                          <span className="ml-1 truncate">
+                            {element.type.replace(/([A-Z])/g, " $1").trim()}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>

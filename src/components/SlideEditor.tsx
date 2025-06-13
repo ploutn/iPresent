@@ -10,7 +10,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Slider } from "./ui/slider";
 import { Switch } from "./ui/switch";
@@ -136,16 +142,18 @@ export function SlideEditor({ slide, onSave, onCancel }: SlideEditorProps) {
                 No media elements added yet.
               </p>
             ) : (
-              editedSlide.mediaElements.map((media, index) => (
+              editedSlide.mediaElements?.map((media, index) => (
                 <div key={index} className="flex items-center space-x-2">
                   {media.type === "image" && <Image className="h-5 w-5" />}
                   {media.type === "video" && <Video className="h-5 w-5" />}
                   {media.type === "audio" && <Music className="h-5 w-5" />}
                   <Input
-                    value={media.src}
+                    value={media.url}
                     onChange={(e) => {
-                      const newMediaElements = [...editedSlide.mediaElements];
-                      newMediaElements[index].src = e.target.value;
+                      const newMediaElements = [
+                        ...(editedSlide.mediaElements || []),
+                      ];
+                      newMediaElements[index].url = e.target.value;
                       setEditedSlide({
                         ...editedSlide,
                         mediaElements: newMediaElements,
@@ -177,9 +185,9 @@ export function SlideEditor({ slide, onSave, onCancel }: SlideEditorProps) {
                     variant="destructive"
                     size="sm"
                     onClick={() => {
-                      const newMediaElements = editedSlide.mediaElements.filter(
-                        (_, i) => i !== index
-                      );
+                      const newMediaElements = (
+                        editedSlide.mediaElements || []
+                      ).filter((_, i) => i !== index);
                       setEditedSlide({
                         ...editedSlide,
                         mediaElements: newMediaElements,
@@ -198,10 +206,10 @@ export function SlideEditor({ slide, onSave, onCancel }: SlideEditorProps) {
                   setEditedSlide({
                     ...editedSlide,
                     mediaElements: [
-                      ...editedSlide.mediaElements,
+                      ...(editedSlide.mediaElements || []),
                       {
                         type: "image",
-                        src: "",
+                        url: "",
                         isVisible: true,
                         position: { x: 0, y: 0, width: 100, height: 100 },
                       },
@@ -217,10 +225,10 @@ export function SlideEditor({ slide, onSave, onCancel }: SlideEditorProps) {
                   setEditedSlide({
                     ...editedSlide,
                     mediaElements: [
-                      ...editedSlide.mediaElements,
+                      ...(editedSlide.mediaElements || []),
                       {
                         type: "video",
-                        src: "",
+                        url: "",
                         isVisible: true,
                         position: { x: 0, y: 0, width: 100, height: 100 },
                       },
@@ -236,10 +244,10 @@ export function SlideEditor({ slide, onSave, onCancel }: SlideEditorProps) {
                   setEditedSlide({
                     ...editedSlide,
                     mediaElements: [
-                      ...editedSlide.mediaElements,
+                      ...(editedSlide.mediaElements || []),
                       {
                         type: "audio",
-                        src: "",
+                        url: "",
                         isVisible: true,
                         position: { x: 0, y: 0, width: 100, height: 100 },
                       },

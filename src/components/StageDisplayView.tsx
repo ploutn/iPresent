@@ -3,7 +3,19 @@ import React, { useState, useEffect, useRef } from "react";
 import { useStageDisplay } from "../hooks/useStageDisplay";
 import { useOutputManagement } from "../hooks/useOutputManagement";
 import { ContentItem, Slide } from "../types";
-import { StageDisplayElement, StageDisplayConfig } from "../types/stageDisplay";
+import {
+  StageDisplayElement,
+  StageDisplayConfig,
+  StageDisplayTemplate,
+} from "../types/stageDisplay";
+
+const defaultStageDisplayTemplate: StageDisplayTemplate = {
+  id: "default-empty-template",
+  name: "Default Empty Template",
+  elements: [],
+  backgroundColor: "#000000",
+  backgroundImage: "",
+};
 import { StageDisplayPreview } from "./stageDisplay/StageDisplayPreview";
 import { StageDisplayConfigPanel } from "./stageDisplay/StageDisplayConfigPanel";
 import { MultiScreenManager } from "./output/MultiScreenManager";
@@ -109,22 +121,23 @@ export function StageDisplayView({
   const {
     stageDisplayConfig,
     activeTemplate,
-    setActiveTemplateId,
-    updateTemplate,
-    createTemplate,
-    deleteTemplate,
+    setActiveTemplate,
+    updateStageDisplayConfig,
     exportTemplate,
     importTemplate,
-    toggleStageDisplay,
     setTargetDisplayId,
   } = useStageDisplay();
-
   const {
-    availableDisplays,
+    screenState,
     outputSettings,
+    toggleMainScreen,
+    toggleOutputWindow,
+    availableDisplays,
     updateOutputSettings,
     refreshDisplays,
   } = useOutputManagement();
+
+  const templateToRender = activeTemplate || defaultStageDisplayTemplate;
 
   const [liveData, setLiveData] = useState<LiveDisplayData>({
     currentTime: new Date().toLocaleTimeString(),
@@ -343,7 +356,7 @@ export function StageDisplayView({
     if (
       updatedConfig.activeTemplateId !== stageDisplayConfig.activeTemplateId
     ) {
-      setActiveTemplateId(updatedConfig.activeTemplateId);
+      setActiveTemplate(updatedConfig.activeTemplateId);
     }
 
     // Update templates if changed
@@ -359,12 +372,20 @@ export function StageDisplayView({
       updatedTemplate &&
       JSON.stringify(currentTemplate) !== JSON.stringify(updatedTemplate)
     ) {
-      updateTemplate(updatedTemplate);
+      updateStageDisplayConfig({
+        ...stageDisplayConfig,
+        templates: stageDisplayConfig.templates.map((t) =>
+          t.id === updatedTemplate.id ? updatedTemplate : t
+        ),
+      });
     }
 
     // Update other settings
     if (updatedConfig.isActive !== stageDisplayConfig.isActive) {
-      toggleStageDisplay();
+      updateStageDisplayConfig({
+        ...stageDisplayConfig,
+        isActive: updatedConfig.isActive,
+      });
     }
 
     if (updatedConfig.targetDisplayId !== stageDisplayConfig.targetDisplayId) {
@@ -456,7 +477,7 @@ export function StageDisplayView({
     return (
       <div className={className}>
         <StageDisplayPreview
-          config={stageDisplayConfig}
+          template={templateToRender}
           currentSlide={currentSlide as Slide}
           nextSlide={nextSlide as Slide}
           speakerNotes={speakerNotes}
@@ -482,23 +503,30 @@ export function StageDisplayView({
           <TabsContent value="stage-display" className="space-y-6">
             <StageDisplayConfigPanel
               config={stageDisplayConfig}
-              onConfigChange={updateStageDisplayConfig}
+              onConfigChange={handleConfigUpdate}
+              exportTemplate={exportTemplate}
+              importTemplate={importTemplate}
             />
           </TabsContent>
 
           <TabsContent value="multi-screen" className="space-y-6">
-            <MultiScreenManager />
+            <MultiScreenManager
+              availableDisplays={availableDisplays}
+              outputSettings={outputSettings}
+              updateOutputSettings={updateOutputSettings}
+              refreshDisplays={refreshDisplays}
+            />
           </TabsContent>
 
           <TabsContent value="preview" className="space-y-6">
             <StageDisplayPreview
-              config={stageDisplayConfig}
+              template={templateToRender}
               currentSlide={currentSlide as Slide}
               nextSlide={nextSlide as Slide}
               speakerNotes={speakerNotes}
               isPresenting={isPresenting}
               presentationTime={presentationTime}
-              onConfigChange={updateStageDisplayConfig}
+              onConfigChange={handleConfigUpdate}
             />
           </TabsContent>
         </Tabs>

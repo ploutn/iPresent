@@ -16,6 +16,7 @@ import {
 } from "../types";
 import { persist } from "zustand/middleware";
 import { v4 as uuidv4 } from "uuid";
+import { PROFESSIONAL_TEMPLATES } from "../data/professionalTemplates";
 
 interface PresentationStore {
   // Legacy items for backward compatibility
@@ -37,6 +38,10 @@ interface PresentationStore {
   isPlaying: boolean;
   isPaused: boolean;
   playbackSpeed: number;
+
+  // New actions for PresentationsPage.tsx
+  setPresentations: (presentations: PresentationContentItem[]) => void;
+  addPresentation: (presentation: PresentationContentItem) => void;
 
   // Legacy Actions
   setSearchQuery: (query: string) => void;
@@ -85,8 +90,8 @@ interface PresentationStore {
   stopPresentation: () => void;
   pausePresentation: () => void;
   resumePresentation: () => void;
-  nextSlide: () => void;
-  previousSlide: () => void;
+  nextSlide: (startTransition: (slide: Slide) => void) => void;
+  previousSlide: (startTransition: (slide: Slide) => void) => void;
   goToSlide: (index: number) => void;
   setPlaybackSpeed: (speed: number) => void;
 
@@ -122,7 +127,7 @@ export const usePresentationStore = create<PresentationStore>()(
       // Enhanced presentation state
       presentations: [],
       currentPresentation: null,
-      templates: [],
+      templates: PROFESSIONAL_TEMPLATES,
       currentSlideIndex: 0,
       isPlaying: false,
       isPaused: false,
@@ -195,6 +200,13 @@ export const usePresentationStore = create<PresentationStore>()(
         })),
 
       setCurrentSlide: (id) => set({ currentSlide: id }),
+
+      // New actions for PresentationsPage.tsx
+      setPresentations: (presentations) => set({ presentations }),
+      addPresentation: (presentation) =>
+        set((state) => ({
+          presentations: [...state.presentations, presentation],
+        })),
 
       // Enhanced presentation actions
       createPresentation: (title: string, description?: string) => {
@@ -451,19 +463,25 @@ export const usePresentationStore = create<PresentationStore>()(
         set({ isPaused: false });
       },
 
-      nextSlide: () => {
+      nextSlide: (startTransition) => {
         const { currentPresentation, currentSlideIndex } = get();
         if (
           currentPresentation &&
           currentSlideIndex < currentPresentation.slides.length - 1
         ) {
+          const nextSlideData =
+            currentPresentation.slides[currentSlideIndex + 1];
+          startTransition(nextSlideData);
           set({ currentSlideIndex: currentSlideIndex + 1 });
         }
       },
 
-      previousSlide: () => {
-        const { currentSlideIndex } = get();
+      previousSlide: (startTransition) => {
+        const { currentPresentation, currentSlideIndex } = get();
         if (currentSlideIndex > 0) {
+          const previousSlideData =
+            currentPresentation.slides[currentSlideIndex - 1];
+          startTransition(previousSlideData);
           set({ currentSlideIndex: currentSlideIndex - 1 });
         }
       },

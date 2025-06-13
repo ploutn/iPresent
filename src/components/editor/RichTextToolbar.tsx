@@ -284,7 +284,7 @@ export function RichTextToolbar() {
             const element = node.getParent();
             if (element) {
               Object.entries(styles).forEach(([property, value]) => {
-                element.setStyle(property, value);
+                element.setStyle(property);
               });
             }
           });

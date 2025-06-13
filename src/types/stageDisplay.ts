@@ -1,4 +1,5 @@
 // src/types/stageDisplay.ts
+import { Slide } from "./slide";
 
 export type StageDisplayElementType =
   | "currentSlide"
@@ -30,10 +31,20 @@ export interface StageDisplayElement {
 export interface StageDisplayTemplate {
   id: string;
   name: string;
-  description?: string; // ADDED
+  description?: string;
   elements: StageDisplayElement[];
   backgroundColor?: string;
   backgroundImage?: string;
+  isDefault?: boolean; // Whether this is a default template that cannot be deleted
+  targetDisplayId?: string; // ID of the display this template is assigned to
+  layout?: {
+    rows: number;
+    columns: number;
+    gap: number;
+  };
+  currentSlide?: Slide; // Current slide being displayed
+  nextSlide?: Slide; // Next slide to be displayed
+  speakerNotes?: string; // Speaker notes for the current slide
 }
 
 export interface StageDisplayConfig {

@@ -871,92 +871,16 @@ export function AnnouncementsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6 py-2">
-            <div>
-              <Label
-                htmlFor="announcementTitleAdd"
-                className="text-sm font-medium text-[#A0AEC0] mb-1.5 block flex items-center gap-1.5"
-              >
-                <TypeIcon className="h-4 w-4" /> Title
-              </Label>
-              <Input
-                id="announcementTitleAdd"
-                placeholder="Enter announcement title"
-                className="bg-[#2D3748] border-[#4A5568] text-white rounded-md focus:ring-2 focus:ring-[#3182CE] focus:border-[#3182CE] transition-colors placeholder-slate-400"
-                value={newAnnouncementTitle}
-                onChange={(e) => setNewAnnouncementTitle(e.target.value)}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label
-                  htmlFor="announcementCategoryAdd"
-                  className="text-sm font-medium text-[#A0AEC0] mb-1.5 block flex items-center gap-1.5"
-                >
-                  <Tag className="h-4 w-4" /> Category
-                </Label>
-                <select
-                  id="announcementCategoryAdd"
-                  className="w-full bg-[#2D3748] border-[#4A5568] rounded-md p-2 text-white focus:ring-2 focus:ring-[#3182CE] focus:border-[#3182CE] transition-colors"
-                  value={newAnnouncementCategory}
-                  onChange={(e) => setNewAnnouncementCategory(e.target.value)}
-                >
-                  {[
-                    "Events",
-                    "Youth",
-                    "Bible Study",
-                    "Outreach",
-                    "Worship",
-                    "Children",
-                    "Other",
-                  ].map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <Label
-                  htmlFor="announcementStatusAdd"
-                  className="text-sm font-medium text-[#A0AEC0] mb-1.5 block flex items-center gap-1.5"
-                >
-                  <CheckCircle className="h-4 w-4" /> Status
-                </Label>
-                <select
-                  id="announcementStatusAdd"
-                  className="w-full bg-[#2D3748] border-[#4A5568] rounded-md p-2 text-white focus:ring-2 focus:ring-[#3182CE] focus:border-[#3182CE] transition-colors"
-                  value={newAnnouncementStatus}
-                  onChange={(e) =>
-                    setNewAnnouncementStatus(
-                      e.target.value as "draft" | "published"
-                    )
-                  }
-                >
-                  <option value="published">Published</option>
-                  <option value="draft">Draft</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <Label
-                htmlFor="announcementContentAdd"
-                className="text-sm font-medium text-[#A0AEC0] mb-1.5 block flex items-center gap-1.5"
-              >
-                <MessageSquare className="h-4 w-4" /> Content
-              </Label>
-              <Textarea
-                id="announcementContentAdd"
-                value={newAnnouncementContent}
-                onChange={(e) => setNewAnnouncementContent(e.target.value)}
-                placeholder="Enter announcement content..."
-                className="w-full p-2 bg-[#2D3748] border-[#4A5568] text-white min-h-[150px] rounded-md focus:ring-2 focus:ring-[#3182CE] focus:border-[#3182CE] transition-colors placeholder-slate-400"
-              />
-            </div>
-          </div>
+          <AnnouncementEditor
+            title={newAnnouncementTitle}
+            content={newAnnouncementContent}
+            category={newAnnouncementCategory}
+            status={newAnnouncementStatus}
+            onTitleChange={setNewAnnouncementTitle}
+            onContentChange={setNewAnnouncementContent}
+            onCategoryChange={setNewAnnouncementCategory}
+            onStatusChange={setNewAnnouncementStatus}
+          />
 
           <DialogFooter className="flex justify-end gap-3 pt-4">
             <Button
@@ -988,92 +912,16 @@ export function AnnouncementsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6 py-2">
-            <div>
-              <Label
-                htmlFor="announcementTitleEdit"
-                className="text-sm font-medium text-[#A0AEC0] mb-1.5 block flex items-center gap-1.5"
-              >
-                <TypeIcon className="h-4 w-4" /> Title
-              </Label>
-              <Input
-                id="announcementTitleEdit"
-                placeholder="Announcement Title"
-                className="bg-[#2D3748] border-[#4A5568] text-white rounded-md focus:ring-2 focus:ring-[#3182CE] focus:border-[#3182CE] transition-colors placeholder-slate-400"
-                value={newAnnouncementTitle}
-                onChange={(e) => setNewAnnouncementTitle(e.target.value)}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label
-                  htmlFor="announcementCategoryEdit"
-                  className="text-sm font-medium text-[#A0AEC0] mb-1.5 block flex items-center gap-1.5"
-                >
-                  <Tag className="h-4 w-4" /> Category
-                </Label>
-                <select
-                  id="announcementCategoryEdit"
-                  className="w-full bg-[#2D3748] border-[#4A5568] rounded-md p-2 text-white focus:ring-2 focus:ring-[#3182CE] focus:border-[#3182CE] transition-colors"
-                  value={newAnnouncementCategory}
-                  onChange={(e) => setNewAnnouncementCategory(e.target.value)}
-                >
-                  {[
-                    "Events",
-                    "Youth",
-                    "Bible Study",
-                    "Outreach",
-                    "Worship",
-                    "Children",
-                    "Other",
-                  ].map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <Label
-                  htmlFor="announcementStatusEdit"
-                  className="text-sm font-medium text-[#A0AEC0] mb-1.5 block flex items-center gap-1.5"
-                >
-                  <CheckCircle className="h-4 w-4" /> Status
-                </Label>
-                <select
-                  id="announcementStatusEdit"
-                  className="w-full bg-[#2D3748] border-[#4A5568] rounded-md p-2 text-white focus:ring-2 focus:ring-[#3182CE] focus:border-[#3182CE] transition-colors"
-                  value={newAnnouncementStatus}
-                  onChange={(e) =>
-                    setNewAnnouncementStatus(
-                      e.target.value as "draft" | "published"
-                    )
-                  }
-                >
-                  <option value="published">Published</option>
-                  <option value="draft">Draft</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <Label
-                htmlFor="announcementContentEdit"
-                className="text-sm font-medium text-[#A0AEC0] mb-1.5 block flex items-center gap-1.5"
-              >
-                <MessageSquare className="h-4 w-4" /> Content
-              </Label>
-              <Textarea
-                id="announcementContentEdit"
-                value={newAnnouncementContent}
-                onChange={(e) => setNewAnnouncementContent(e.target.value)}
-                placeholder="Enter announcement content..."
-                className="w-full p-2 bg-[#2D3748] border-[#4A5568] text-white min-h-[150px] rounded-md focus:ring-2 focus:ring-[#3182CE] focus:border-[#3182CE] transition-colors placeholder-slate-400"
-              />
-            </div>
-          </div>
+          <AnnouncementEditor
+            title={newAnnouncementTitle}
+            content={newAnnouncementContent}
+            category={newAnnouncementCategory}
+            status={newAnnouncementStatus}
+            onTitleChange={setNewAnnouncementTitle}
+            onContentChange={setNewAnnouncementContent}
+            onCategoryChange={setNewAnnouncementCategory}
+            onStatusChange={setNewAnnouncementStatus}
+          />
 
           <DialogFooter className="flex justify-end gap-3 pt-4">
             <Button

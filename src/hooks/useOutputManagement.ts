@@ -29,16 +29,33 @@ export function useOutputManagement() {
     activeDisplay: "main",
   });
 
+  const [availableDisplays, setAvailableDisplays] = useState<DisplayDevice[]>([
+    {
+      id: "main",
+      name: "Main Screen",
+      isActive: true,
+      resolution: "1920x1080",
+    },
+    {
+      id: "external1",
+      name: "External Display 1",
+      isActive: false,
+      resolution: "1280x720",
+    },
+  ]);
+
   const toggleMainScreen = () =>
     setScreenState((prev) => ({
       ...prev,
       isMainScreenActive: !prev.isMainScreenActive,
     }));
-  const toggleOutputDisplay = () =>
+
+  const toggleOutputWindow = () =>
     setScreenState((prev) => ({
       ...prev,
       isOutputActive: !prev.isOutputActive,
     }));
+
   const toggleBlackout = () =>
     setScreenState((prev) => ({ ...prev, isBlackout: !prev.isBlackout }));
 
@@ -92,15 +109,49 @@ export function useOutputManagement() {
     }));
   };
 
+  const updateOutputSettings = (settings: Partial<OutputSettings>) => {
+    setOutputSettings((prev) => ({
+      ...prev,
+      ...settings,
+    }));
+  };
+
+  const refreshDisplays = async () => {
+    try {
+      // In a real application, this would query the system for available displays
+      // For now, we'll just simulate a refresh
+      const displays = await navigator.mediaDevices.enumerateDevices();
+      const videoInputs = displays.filter(
+        (device) => device.kind === "videoinput"
+      );
+
+      const updatedDisplays: DisplayDevice[] = videoInputs.map(
+        (device, index) => ({
+          id: device.deviceId || `display-${index}`,
+          name: device.label || `Display ${index + 1}`,
+          isActive: index === 0,
+          resolution: "1920x1080", // Default resolution
+        })
+      );
+
+      setAvailableDisplays(updatedDisplays);
+    } catch (error) {
+      console.error("Error refreshing displays:", error);
+    }
+  };
+
   return {
     screenState,
     outputSettings,
+    availableDisplays,
     toggleMainScreen,
-    toggleOutputDisplay,
+    toggleOutputWindow,
     toggleBlackout,
     toggleFullscreen,
     updateDisplayStatus,
     updateDisplayResolution,
     setActiveDisplay,
+    updateOutputSettings,
+    refreshDisplays,
   };
 }

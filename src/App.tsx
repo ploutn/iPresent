@@ -17,7 +17,11 @@ const HomePage = lazy(() =>
     default: module.HomePage,
   }))
 );
-const SongsPage = lazy(() => import("./components/songs/SongsPage"));
+const SongsPage = lazy(() =>
+  import("./components/songs/SongsPage").then((module) => ({
+    default: module.default,
+  }))
+);
 const MediaPage = lazy(() =>
   import("./components/media/MediaPage").then((module) => ({
     default: module.MediaPage,
@@ -38,17 +42,23 @@ const AnnouncementsPage = lazy(() =>
     default: module.AnnouncementsPage,
   }))
 );
+
 const PresentationsPage = lazy(() =>
   import("./components/presentations/PresentationsPage").then((module) => ({
-    default: module.PresentationsPage,
+    default: module.default,
   }))
 );
+
 const PresentationViewPage = lazy(() =>
   import("./pages/PresentationViewPage").then((module) => ({
     default: module.PresentationViewPage,
   }))
 );
-const OutputWindow = lazy(() => import("./pages/OutputWindow")); // Added import for OutputWindow
+const OutputWindow = lazy(() =>
+  import("./pages/OutputWindow").then((module) => ({
+    default: module.default,
+  }))
+);
 import { useSidebar } from "./components/hooks/useSidebar";
 import { ContentForm } from "./components/ContentForm";
 import { useContentStore } from "./stores/useContentStore";

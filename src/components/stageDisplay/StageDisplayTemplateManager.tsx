@@ -61,6 +61,7 @@ import {
   AlignCenter,
   AlignRight,
 } from "lucide-react"; // Removed unused icons like Image, Video, Palette
+import { StageDisplayPreview } from "./StageDisplayPreview";
 
 interface StageDisplayTemplateManagerProps {
   templates: StageDisplayTemplate[];

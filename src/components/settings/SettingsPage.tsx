@@ -27,6 +27,7 @@ import {
   Eye,
   EyeOff,
   Layers,
+  PresentationIcon,
 } from "lucide-react";
 import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
@@ -63,6 +64,19 @@ import { DisplayDevice } from "../../types/outputManagement";
 import { MediaCacheStats } from "../media/MediaCacheStats";
 import { ThemeSettings } from "./ThemeSettings";
 import { MobileSettingsNav } from "../MobileSettingsNav";
+import { ThemeToggle } from "./ThemeToggle";
+import { QuickThemeToggle } from "../theme/ThemeToggle";
+import { ContentActions } from "../ContentActions";
+import { PresentationPlayer } from "../presentations/PresentationPlayer";
+import { BiblePage } from "../bible/BiblePage";
+import { MultiScreenManager } from "../output/MultiScreenManager";
+import { PresentationTemplateManager, TemplatePreview } from "../templates";
+import { TemplateContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { TemplateCustomizer } from "../templates/TemplateCustomizer";
+import { PageNavigation } from "../navigation/PageNavigation";
+import AnnouncementBannerDisplay from "../stageDisplayElements/AnnouncementBannerDisplay";
+import { AnnouncementEditor } from "../announcements/AnnouncementEditor";
+import App from "@/App";
 
 export function SettingsPage(): JSX.Element {
   const { isMobile, isTablet, isDesktop } = useResponsive();
