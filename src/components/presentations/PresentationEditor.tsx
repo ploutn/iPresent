@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from "react";
 import {
   Plus,
-  Pencil,
-  Eye,
-  Minimize,
-  Maximize,
-  FileText,
-  Settings,
-  Image,
-  BookOpen,
-  Music,
   Save,
   X,
+  FileText,
+  BookOpen,
+  Music,
+  Type,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
+  Settings,
+  Image,
+  Eye,
 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { Slide, SlideElement, PresentationContentItem } from "../../types";
@@ -22,753 +24,525 @@ interface PresentationEditorProps {
   onCancel: () => void;
 }
 
-const PresentationEditor: React.FC<PresentationEditorProps> = ({
-  presentation,
-  onSave,
-  onCancel,
-}) => {
-  const [currentSlide, setCurrentSlide] = useState<Slide>(
-    presentation.slides[0]
-  );
-  const [selectedElement, setSelectedElement] = useState<SlideElement | null>(
-    null
-  );
-  const [showSettings, setShowSettings] = useState(false);
-  const [showMediaLibrary, setShowMediaLibrary] = useState(false);
-  const [showBibleVerseSearch, setShowBibleVerseSearch] = useState(false);
-  const [showSongSearch, setShowSongSearch] = useState(false);
-  const [showMediaUpload, setShowMediaUpload] = useState(false);
-  const [showTemplates, setShowTemplates] = useState(false);
-  const [showPresenterNotes, setShowPresenterNotes] = useState(false);
-  const [showAudienceNotes, setShowAudienceNotes] = useState(false);
-  const [showTimer, setShowTimer] = useState(false);
-  const [showCountdown, setShowCountdown] = useState(false);
-  const [showRemoteControl, setShowRemoteControl] = useState(false);
-  const [showLivePreview, setShowLivePreview] = useState(false);
-  const [showTimeline, setShowTimeline] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [autoSave, setAutoSave] = useState(true);
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
-
-  // Load presentation from local storage on mount
-  useEffect(() => {
-    const savedPresentation = localStorage.getItem(
-      `presentation_${presentation.id}`
+const PresentationEditor: React.FC<PresentationEditorProps> = React.memo(
+  ({
+    presentation,
+    onSave,
+    onCancel,
+  }) => {
+    const [currentSlide, setCurrentSlide] = useState<Slide>(
+      presentation.slides[0] || {
+        id: uuidv4(),
+        title: "New Slide",
+        content: "",
+        type: "presentation",
+        order: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        backgroundColor: "#000000",
+        textColor: "#ffffff",
+        fontSize: 24,
+        fontFamily: "Arial",
+        textAlign: "center",
+        elements: [],
+      }
     );
-    if (savedPresentation) {
-      const parsed = JSON.parse(savedPresentation);
-      onSave(parsed);
-    }
-  }, [presentation.id]);
+    const [text, setText] = useState(currentSlide.content || "");
+    const [textColor, setTextColor] = useState(currentSlide.textColor || "#ffffff");
+    const [fontSize, setFontSize] = useState(currentSlide.fontSize?.toString() || "24");
+      const [alignment, setAlignment] = useState<"left" | "center" | "right" | "justify">(currentSlide.textAlign || "center");
+    const [backgroundColor, setBackgroundColor] = useState(currentSlide.backgroundColor || "#000000");
+    const [slideTitle, setSlideTitle] = useState(currentSlide.title || "New Slide");
+    const [autoSave, setAutoSave] = useState(true);
+    const [lastSaved, setLastSaved] = useState<Date | null>(null);
+    const [selectedElement, setSelectedElement] = useState<SlideElement | null>(null);
+    const [showSettings, setShowSettings] = useState(false);
+    const [showBibleVerseSearch, setShowBibleVerseSearch] = useState(false);
+    const [showSongSearch, setShowSongSearch] = useState(false);
+    const [showMediaUpload, setShowMediaUpload] = useState(false);
+    const [showMediaLibrary, setShowMediaLibrary] = useState(false);
+    const [showTemplates, setShowTemplates] = useState(false);
+    const [showPresenterNotes, setShowPresenterNotes] = useState(false);
+    const [showAudienceNotes, setShowAudienceNotes] = useState(false);
+    const [showTimer, setShowTimer] = useState(false);
+    const [showCountdown, setShowCountdown] = useState(false);
+    const [showRemoteControl, setShowRemoteControl] = useState(false);
+    const [showLivePreview, setShowLivePreview] = useState(false);
 
-  // Auto-save to local storage
-  useEffect(() => {
-    if (autoSave) {
-      localStorage.setItem(
-        `presentation_${presentation.id}`,
-        JSON.stringify(presentation)
-      );
-      setLastSaved(new Date());
-    }
-  }, [presentation, autoSave]);
+    // Auto-save functionality
+    useEffect(() => {
+      if (autoSave) {
+        const timer = setTimeout(() => {
+          handleSave();
+        }, 1000);
+        return () => clearTimeout(timer);
+      }
+    }, [text, textColor, fontSize, alignment, backgroundColor, slideTitle, autoSave]);
 
-  const handleSlideChange = (property: string, value: any) => {
-    const updatedSlide = {
-      ...currentSlide,
-      [property]: value,
-      updatedAt: new Date(),
+    const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setText(e.target.value);
     };
 
-    setCurrentSlide(updatedSlide);
+    const handleElementChange = (property: string, value: any) => {
+      if (!selectedElement) return;
 
-    const updatedPresentation = {
-      ...presentation,
-      slides: presentation.slides.map((slide) =>
-        slide.id === currentSlide.id ? updatedSlide : slide
-      ),
-    };
-
-    onSave(updatedPresentation);
-  };
-
-  const handleElementChange = (property: string, value: any) => {
-    if (!selectedElement) return;
-
-    const updatedElement = {
-      ...selectedElement,
-      [property]: value,
-    };
-
-    const updatedSlide = {
-      ...currentSlide,
-      elements: currentSlide.elements.map((element) =>
-        element.id === selectedElement.id ? updatedElement : element
-      ),
-    };
-
-    setCurrentSlide(updatedSlide);
-    setSelectedElement(updatedElement);
-
-    const updatedPresentation = {
-      ...presentation,
-      slides: presentation.slides.map((slide) =>
-        slide.id === currentSlide.id ? updatedSlide : slide
-      ),
-    };
-
-    onSave(updatedPresentation);
-  };
-
-  const handleAddElement = (
-    type: "image" | "video" | "audio" | "text" | "bible" | "song"
-  ) => {
-    const newElement: SlideElement = {
-      id: uuidv4(),
-      type,
-      content: "",
-      x: 10,
-      y: 10,
-      width: 80,
-      height: 20,
-      fontSize: 24,
-      fontFamily: "Arial",
-      fontColor: "#ffffff",
-      textAlign: "center",
-    };
-
-    const updatedSlide = {
-      ...currentSlide,
-      elements: [...currentSlide.elements, newElement],
-    };
-
-    setCurrentSlide(updatedSlide);
-    setSelectedElement(newElement);
-
-    const updatedPresentation = {
-      ...presentation,
-      slides: presentation.slides.map((slide) =>
-        slide.id === currentSlide.id ? updatedSlide : slide
-      ),
-    };
-
-    onSave(updatedPresentation);
-  };
-
-  const handleAddSlide = () => {
-    const newSlide: Slide = {
-      id: uuidv4(),
-      title: "New Slide",
-      content: "",
-      type: "presentation",
-      order: presentation.slides.length,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      backgroundColor: "#000000",
-      textColor: "#ffffff",
-      fontSize: 24,
-      fontFamily: "Arial",
-      textAlign: "center",
-      elements: [],
-      transition: {
-        type: "fade",
-        duration: 500,
-        direction: "right",
-        easing: "ease-in-out",
-      },
-      duration: 5,
-      thumbnail: "",
-      notes: "",
-      mediaElements: [],
-      overlaySettings: {
-        textOverlay: false,
-        textBackground: { enabled: false },
-      },
-    };
-
-    const updatedPresentation = {
-      ...presentation,
-      slides: [...presentation.slides, newSlide],
-    };
-
-    onSave(updatedPresentation);
-    setCurrentSlide(newSlide);
-  };
-
-  const handleDeleteSlide = (slideId: string) => {
-    const updatedPresentation = {
-      ...presentation,
-      slides: presentation.slides.filter((slide) => slide.id !== slideId),
-    };
-
-    onSave(updatedPresentation);
-    if (currentSlide.id === slideId) {
-      setCurrentSlide(updatedPresentation.slides[0]);
-    }
-  };
-
-  const handleAddBibleVerse = (verse: string) => {
-    const newElement: SlideElement = {
-      id: uuidv4(),
-      type: "text",
-      content: verse,
-      x: 10,
-      y: 10,
-      width: 80,
-      height: 20,
-      fontSize: 24,
-      fontFamily: "Arial",
-      fontColor: "#ffffff",
-      textAlign: "center",
-    };
-
-    const updatedSlide = {
-      ...currentSlide,
-      elements: [...currentSlide.elements, newElement],
-    };
-
-    setCurrentSlide(updatedSlide);
-    setShowBibleVerseSearch(false);
-
-    const updatedPresentation = {
-      ...presentation,
-      slides: presentation.slides.map((slide) =>
-        slide.id === currentSlide.id ? updatedSlide : slide
-      ),
-    };
-
-    onSave(updatedPresentation);
-  };
-
-  const handleAddSong = (song: string) => {
-    const newElement: SlideElement = {
-      id: uuidv4(),
-      type: "text",
-      content: song,
-      x: 10,
-      y: 10,
-      width: 80,
-      height: 20,
-      fontSize: 24,
-      fontFamily: "Arial",
-      fontColor: "#ffffff",
-      textAlign: "center",
-    };
-
-    const updatedSlide = {
-      ...currentSlide,
-      elements: [...currentSlide.elements, newElement],
-    };
-
-    setCurrentSlide(updatedSlide);
-    setShowSongSearch(false);
-
-    const updatedPresentation = {
-      ...presentation,
-      slides: presentation.slides.map((slide) =>
-        slide.id === currentSlide.id ? updatedSlide : slide
-      ),
-    };
-
-    onSave(updatedPresentation);
-  };
-
-  const handleAddMedia = (
-    mediaUrl: string,
-    type: "image" | "video" | "audio"
-  ) => {
-    const newElement: SlideElement = {
-      id: uuidv4(),
-      type,
-      content: mediaUrl,
-      x: 10,
-      y: 10,
-      width: 80,
-      height: 60,
-      fontSize: 24,
-      fontFamily: "Arial",
-      fontColor: "#ffffff",
-      textAlign: "center",
-    };
-
-    const updatedSlide = {
-      ...currentSlide,
-      elements: [...currentSlide.elements, newElement],
-    };
-
-    setCurrentSlide(updatedSlide);
-    setShowMediaUpload(false);
-
-    const updatedPresentation = {
-      ...presentation,
-      slides: presentation.slides.map((slide) =>
-        slide.id === currentSlide.id ? updatedSlide : slide
-      ),
-    };
-
-    onSave(updatedPresentation);
-  };
-
-  const handleExportPresentation = () => {
-    const dataStr = JSON.stringify(presentation);
-    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(
-      dataStr
-    )}`;
-    const exportFileDefaultName = `${presentation.title}.json`;
-
-    const linkElement = document.createElement("a");
-    linkElement.setAttribute("href", dataUri);
-    linkElement.setAttribute("download", exportFileDefaultName);
-    linkElement.click();
-  };
-
-  const handleImportPresentation = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const importedPresentation = JSON.parse(e.target?.result as string);
-          onSave(importedPresentation);
-        } catch (error) {
-          console.error("Error importing presentation:", error);
-          alert("Error importing presentation. Please check the file format.");
-        }
+      const updatedElement = {
+        ...selectedElement,
+        [property]: value,
       };
-      reader.readAsText(file);
-    }
-  };
 
-  return (
-    <div className="flex h-full">
-      {/* Left Sidebar - Tools and Properties */}
-      <div className="w-64 bg-gray-100 border-r border-gray-200 flex flex-col">
-        <div className="p-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Tools</h3>
-          <div className="space-y-2">
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-md"
-            >
-              <Settings className="h-5 w-5 mr-2" />
-              Settings
-            </button>
-            <button
-              onClick={() => setShowMediaLibrary(!showMediaLibrary)}
-              className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-md"
-            >
-              <Image className="h-5 w-5 mr-2" />
-              Media Library
-            </button>
-            <button
-              onClick={() => setShowBibleVerseSearch(!showBibleVerseSearch)}
-              className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-md"
-            >
-              <BookOpen className="h-5 w-5 mr-2" />
-              Bible Verses
-            </button>
-            <button
-              onClick={() => setShowSongSearch(!showSongSearch)}
-              className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-md"
-            >
-              <Music className="h-5 w-5 mr-2" />
-              Songs
-            </button>
-            <button
-              onClick={() => setShowTemplates(!showTemplates)}
-              className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-md"
-            >
-              <FileText className="h-5 w-5 mr-2" />
-              Templates
-            </button>
-          </div>
-        </div>
+      const updatedSlide = {
+        ...currentSlide,
+        elements: currentSlide.elements.map((element) =>
+          element.id === selectedElement.id ? updatedElement : element
+        ),
+      };
 
-        {/* Church-specific Tools */}
-        <div className="p-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Church Tools
-          </h3>
-          <div className="space-y-2">
-            <button
-              onClick={() => setShowPresenterNotes(!showPresenterNotes)}
-              className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-md"
-            >
-              <FileText className="h-5 w-5 mr-2" />
-              Presenter Notes
-            </button>
-            <button
-              onClick={() => setShowAudienceNotes(!showAudienceNotes)}
-              className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-md"
-            >
-              <FileText className="h-5 w-5 mr-2" />
-              Audience Notes
-            </button>
-            <button
-              onClick={() => setShowTimer(!showTimer)}
-              className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-md"
-            >
-              <Settings className="h-5 w-5 mr-2" />
-              Timer
-            </button>
-            <button
-              onClick={() => setShowCountdown(!showCountdown)}
-              className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-md"
-            >
-              <Settings className="h-5 w-5 mr-2" />
-              Countdown
-            </button>
-            <button
-              onClick={() => setShowRemoteControl(!showRemoteControl)}
-              className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-md"
-            >
-              <Settings className="h-5 w-5 mr-2" />
-              Remote Control
-            </button>
-            <button
-              onClick={() => setShowLivePreview(!showLivePreview)}
-              className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-md"
-            >
-              <Eye className="h-5 w-5 mr-2" />
-              Live Preview
-            </button>
-          </div>
-        </div>
+      setCurrentSlide(updatedSlide);
+      setSelectedElement(updatedElement);
 
-        {/* File Operations */}
-        <div className="p-4 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            File Operations
-          </h3>
-          <div className="space-y-2">
-            <button
-              onClick={handleExportPresentation}
-              className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-md"
-            >
-              <Save className="h-5 w-5 mr-2" />
-              Export Presentation
-            </button>
-            <label className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-md cursor-pointer">
-              <FileText className="h-5 w-5 mr-2" />
-              Import Presentation
-              <input
-                type="file"
-                accept=".json"
-                onChange={handleImportPresentation}
-                className="hidden"
-              />
-            </label>
-          </div>
-        </div>
+      const updatedPresentation = {
+        ...presentation,
+        slides: presentation.slides.map((slide) =>
+          slide.id === currentSlide.id ? updatedSlide : slide
+        ),
+      };
 
-        {/* Auto-save Status */}
-        <div className="p-4 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-700">Auto-save</span>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={autoSave}
-                onChange={(e) => setAutoSave(e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-          {lastSaved && (
-            <p className="text-xs text-gray-500 mt-2">
-              Last saved: {lastSaved.toLocaleTimeString()}
-            </p>
-          )}
-        </div>
-      </div>
+      onSave(updatedPresentation);
+    };
 
-      {/* Main Editor Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Toolbar */}
-        <div className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4">
+    const handleSave = () => {
+      const updatedSlide = {
+        ...currentSlide,
+        title: slideTitle,
+        content: text,
+        textColor: textColor,
+        fontSize: parseInt(fontSize),
+        textAlign: alignment as "left" | "center" | "right" | "justify",
+        backgroundColor: backgroundColor,
+        updatedAt: new Date(),
+      };
+
+      const updatedPresentation = {
+        ...presentation,
+        slides: presentation.slides.length > 0 
+          ? presentation.slides.map(slide => 
+              slide.id === currentSlide.id ? updatedSlide : slide
+            )
+          : [updatedSlide],
+        updatedAt: new Date(),
+      };
+
+      onSave(updatedPresentation);
+      setLastSaved(new Date());
+    };
+
+    const handleAddSlide = () => {
+      const newSlide: Slide = {
+        id: uuidv4(),
+        title: `Slide ${presentation.slides.length + 1}`,
+        content: "",
+        type: "presentation",
+        order: presentation.slides.length,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        backgroundColor: "#000000",
+        textColor: "#ffffff",
+        fontSize: 24,
+        fontFamily: "Arial",
+        textAlign: "center",
+        elements: [],
+      };
+      const updatedPresentation = {
+        ...presentation,
+        slides: [...presentation.slides, newSlide],
+      };
+      onSave(updatedPresentation);
+      setCurrentSlide(newSlide);
+      setText("");
+      setTextColor("#ffffff");
+      setFontSize("24");
+      setAlignment("center");
+      setBackgroundColor("#000000");
+      setSlideTitle(newSlide.title);
+    };
+
+    const handleDeleteSlide = (slideId: string) => {
+      const updatedSlides = presentation.slides.filter((slide) => slide.id !== slideId);
+      const updatedPresentation = {
+        ...presentation,
+        slides: updatedSlides,
+      };
+      onSave(updatedPresentation);
+      if (currentSlide.id === slideId) {
+        setCurrentSlide(updatedSlides[0] || null);
+        setText(updatedSlides[0]?.content || "");
+        setTextColor(updatedSlides[0]?.textColor || "#ffffff");
+        setFontSize(updatedSlides[0]?.fontSize?.toString() || "24");
+        setAlignment(updatedSlides[0]?.textAlign || "center");
+        setBackgroundColor(updatedSlides[0]?.backgroundColor || "#000000");
+        setSlideTitle(updatedSlides[0]?.title || "New Slide");
+      }
+    };
+
+    const handleAddMedia = (type: 'image' | 'video', src: string) => {
+      const newElement: SlideElement = {
+        id: uuidv4(),
+        type: type,
+        src: src,
+        x: 50,
+        y: 50,
+        width: 200,
+        height: 150,
+      };
+      const updatedSlide = {
+        ...currentSlide,
+        elements: [...currentSlide.elements, newElement],
+      };
+      setCurrentSlide(updatedSlide);
+      const updatedPresentation = {
+        ...presentation,
+        slides: presentation.slides.map((slide) =>
+          slide.id === currentSlide.id ? updatedSlide : slide
+        ),
+      };
+      onSave(updatedPresentation);
+    };
+
+    const handleExportPresentation = () => {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(presentation));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href",     dataStr);
+      downloadAnchorNode.setAttribute("download", `${presentation.title || 'presentation'}.json`);
+      document.body.appendChild(downloadAnchorNode);
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+    };
+
+    const handleImportPresentation = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const importedPresentation: PresentationContentItem = JSON.parse(e.target?.result as string);
+            // Here you would typically integrate the imported presentation into your state
+            // For now, let's just log it and perhaps replace the current one for demonstration
+            console.log("Imported Presentation:", importedPresentation);
+            onSave(importedPresentation); // Assuming onSave can handle replacing the entire presentation
+          } catch (error) {
+            console.error("Error parsing imported presentation JSON:", error);
+            alert("Failed to import presentation. Invalid file format.");
+          }
+        };
+        reader.readAsText(file);
+      }
+    };
+
+    const handleAddElement = (type: 'text' | 'image' | 'video' | 'shape') => {
+      const newElement: SlideElement = {
+        id: uuidv4(),
+        type: type,
+        x: 100,
+        y: 100,
+        width: 100,
+        height: 50,
+        content: type === 'text' ? 'New Text' : undefined,
+        src: (type === 'image' || type === 'video') ? 'placeholder.png' : undefined, // Placeholder for media
+        backgroundColor: type === 'shape' ? '#cccccc' : undefined,
+        fontSize: type === 'text' ? 24 : undefined,
+        textColor: type === 'text' ? '#ffffff' : undefined,
+      };
+      const updatedSlide = {
+        ...currentSlide,
+        elements: [...currentSlide.elements, newElement],
+      };
+      setCurrentSlide(updatedSlide);
+      const updatedPresentation = {
+        ...presentation,
+        slides: presentation.slides.map((slide) =>
+          slide.id === currentSlide.id ? updatedSlide : slide
+        ),
+      };
+      onSave(updatedPresentation);
+    };
+
+    return (
+      <div className="flex flex-col h-full bg-gray-100">
+        {/* Header */}
+        <div className="flex justify-between items-center p-4 bg-white border-b border-gray-200">
           <div className="flex items-center space-x-4">
-            <button
-              onClick={handleAddSlide}
-              className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Add Slide
-            </button>
-            <button
-              onClick={() => setShowTimeline(!showTimeline)}
-              className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md"
-            >
-              <FileText className="h-5 w-5 mr-2" />
-              Timeline
-            </button>
+            <h1 className="text-2xl font-bold text-gray-800">Church Presentation Editor</h1>
+            <input
+              type="text"
+              value={slideTitle}
+              onChange={(e) => setSlideTitle(e.target.value)}
+              className="px-3 py-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Slide Title"
+            />
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             <button
-              onClick={() => setIsFullscreen(!isFullscreen)}
-              className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md"
+              onClick={handleSave}
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              {isFullscreen ? (
-                <Minimize className="h-5 w-5 mr-2" />
-              ) : (
-                <Maximize className="h-5 w-5 mr-2" />
-              )}
-              {isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+              <Save className="h-4 w-4 mr-2" />
+              Save
             </button>
             <button
               onClick={onCancel}
-              className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md"
+              className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
             >
-              <X className="h-5 w-5 mr-2" />
+              <X className="h-4 w-4 mr-2" />
               Cancel
             </button>
           </div>
         </div>
 
-        {/* Editor Content */}
-        <div className="flex-1 flex">
-          {/* Slide Thumbnails */}
-          <div className="w-48 bg-gray-50 border-r border-gray-200 overflow-y-auto">
-            {presentation.slides.map((slide, index) => (
-              <div
-                key={slide.id}
-                className={`p-2 cursor-pointer ${
-                  currentSlide.id === slide.id
-                    ? "bg-blue-100"
-                    : "hover:bg-gray-100"
-                }`}
-                onClick={() => setCurrentSlide(slide)}
-              >
-                <div className="relative">
-                  <div className="aspect-video bg-gray-200 rounded flex items-center justify-center">
-                    {slide.thumbnail ? (
-                      <img
-                        src={slide.thumbnail}
-                        alt={`Slide ${index + 1}`}
-                        className="w-full h-full object-cover rounded"
-                      />
-                    ) : (
-                      <FileText className="h-12 w-12 text-gray-400" />
-                    )}
-                  </div>
-                  <div className="absolute top-2 right-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteSlide(slide.id);
-                      }}
-                      className="p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-600 mt-1 truncate">
-                  {slide.title || `Slide ${index + 1}`}
-                </p>
+        <div className="flex flex-1">
+          {/* Left Sidebar - Slides */}
+          <div className="w-64 bg-white border-r border-gray-200 overflow-y-auto">
+            <div className="p-4">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Slides</h3>
+                <button
+                  onClick={handleAddSlide}
+                  className="flex items-center px-2 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add
+                </button>
               </div>
-            ))}
-          </div>
-
-          {/* Main Editor Canvas */}
-          <div className="flex-1 flex flex-col">
-            <div className="flex-1 p-8 bg-gray-100 relative">
-              <div
-                className="w-full h-full bg-white rounded-lg shadow-lg overflow-hidden"
-                style={{ backgroundColor: currentSlide.backgroundColor }}
-              >
-                {currentSlide.elements.map((element) => (
+              <div className="space-y-2">
+                {presentation.slides.map((slide, index) => (
                   <div
-                    key={element.id}
-                    className={`absolute ${
-                      selectedElement?.id === element.id
-                        ? "ring-2 ring-blue-500"
-                        : ""
+                    key={slide.id}
+                    className={`p-3 rounded-md cursor-pointer border ${
+                      currentSlide.id === slide.id
+                        ? "bg-blue-100 border-blue-300"
+                        : "bg-gray-50 border-gray-200 hover:bg-gray-100"
                     }`}
-                    style={{
-                      left: `${element.x}%`,
-                      top: `${element.y}%`,
-                      width: `${element.width}%`,
-                      height: `${element.height}%`,
-                      fontSize: `${element.fontSize}px`,
-                      fontFamily: element.fontFamily,
-                      color: element.fontColor,
-                      textAlign: element.textAlign as any,
+
+
+
+
+                    onClick={() => {
+                      setCurrentSlide(slide);
+                      setText(slide.content || "");
+                      setTextColor(slide.textColor || "#ffffff");
+                      setFontSize(slide.fontSize?.toString() || "24");
+                      setAlignment(slide.textAlign || "center");
+                      setBackgroundColor(slide.backgroundColor || "#000000");
+                      setSlideTitle(slide.title || "New Slide");
                     }}
-                    onClick={() => setSelectedElement(element)}
                   >
-                    {element.type === "text" && element.content}
-                    {element.type === "image" && (
-                      <img
-                        src={element.content}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
-                    )}
-                    {element.type === "video" && (
-                      <video
-                        src={element.content}
-                        controls
-                        className="w-full h-full"
-                      />
-                    )}
-                    {element.type === "audio" && (
-                      <audio
-                        src={element.content}
-                        controls
-                        className="w-full"
-                      />
-                    )}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <FileText className="h-4 w-4 mr-2 text-gray-500" />
+                        <span className="text-sm font-medium text-gray-900 truncate">
+                          {slide.title || `Slide ${index + 1}`}
+                        </span>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteSlide(slide.id);
+                        }}
+                        className="text-red-500 hover:text-red-700 ml-2"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
-
-              {/* Church-specific Overlays */}
-              {showPresenterNotes && (
-                <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                    Presenter Notes
-                  </h3>
-                  <textarea
-                    value={currentSlide.notes}
-                    onChange={(e) => handleSlideChange("notes", e.target.value)}
-                    className="w-full h-32 p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Add presenter notes here..."
-                  />
-                </div>
-              )}
-
-              {showAudienceNotes && (
-                <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                    Audience Notes
-                  </h3>
-                  <textarea
-                    value={currentSlide.notes}
-                    onChange={(e) => handleSlideChange("notes", e.target.value)}
-                    className="w-full h-32 p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Add audience notes here..."
-                  />
-                </div>
-              )}
-
-              {showTimer && (
-                <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-4">
-                  <div className="text-2xl font-bold text-gray-900">00:00</div>
-                </div>
-              )}
-
-              {showCountdown && (
-                <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-4">
-                  <div className="text-2xl font-bold text-gray-900">05:00</div>
-                </div>
-              )}
             </div>
 
-            {/* Timeline */}
-            {showTimeline && (
-              <div className="h-32 bg-white border-t border-gray-200 p-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Timeline
-                </h3>
-                <div className="flex items-center space-x-4">
-                  {presentation.slides.map((slide, index) => (
-                    <div
-                      key={slide.id}
-                      className="relative"
-                      style={{ width: `${(slide.duration || 5) * 100}px` }}
+            {/* Church Tools */}
+            <div className="p-4 border-t border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Church Tools</h3>
+              <div className="space-y-2">
+                <button
+                  onClick={() => setShowBibleVerseSearch(true)}
+                  className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md"
+                >
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Add Bible Verse
+                </button>
+                <button
+                  onClick={() => setShowSongSearch(true)}
+                  className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md"
+                >
+                  <Music className="h-4 w-4 mr-2" />
+                  Add Song Lyrics
+                </button>
+              </div>
+            </div>
+
+            {/* File Operations */}
+            <div className="p-4 border-t border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">File Operations</h3>
+              <div className="space-y-2">
+                <button
+                  onClick={handleExportPresentation}
+                  className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Export Presentation
+                </button>
+                <label htmlFor="import-presentation-file"
+                  className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md cursor-pointer"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Import Presentation
+                  <input
+                    id="import-presentation-file"
+                    type="file"
+                    accept=".json"
+                    onChange={handleImportPresentation}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Editor Area */}
+          <div className="flex-1 p-6">
+            <div className="max-w-4xl mx-auto">
+              {/* Formatting Controls */}
+              <div className="bg-white rounded-lg p-4 shadow-md mb-6">
+                <div className="flex flex-wrap gap-4 items-center">
+                  <div className="flex items-center">
+                    <label htmlFor="textColor" className="mr-2 text-gray-700 font-medium">Text Color:</label>
+                    <input
+                      type="color"
+                      id="textColor"
+                      value={textColor}
+                      onChange={(e) => setTextColor(e.target.value)}
+                      className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+                    />
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <label htmlFor="backgroundColor" className="mr-2 text-gray-700 font-medium">Background:</label>
+                    <input
+                      type="color"
+                      id="backgroundColor"
+                      value={backgroundColor}
+                      onChange={(e) => setBackgroundColor(e.target.value)}
+                      className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+                    />
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <label htmlFor="fontSize" className="mr-2 text-gray-700 font-medium">Size:</label>
+                    <select
+                      id="fontSize"
+                      value={fontSize}
+                      onChange={(e) => setFontSize(e.target.value)}
+                      className="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
-                      <div className="h-8 bg-gray-200 rounded"></div>
-                      <div className="absolute -top-6 left-0 text-xs text-gray-500">
-                        Slide {index + 1}
-                      </div>
+                      <option value="16">Small (16px)</option>
+                      <option value="20">Medium (20px)</option>
+                      <option value="24">Large (24px)</option>
+                      <option value="32">X-Large (32px)</option>
+                      <option value="48">XX-Large (48px)</option>
+                    </select>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <label className="mr-2 text-gray-700 font-medium">Align:</label>
+                    <div className="flex border border-gray-300 rounded-md overflow-hidden">
+                      <button
+                        onClick={() => setAlignment("left")}
+                        className={`p-2 ${
+                          alignment === "left" ? "bg-blue-500 text-white" : "bg-white text-gray-700 hover:bg-gray-100"
+                        }`}
+                      >
+                        <AlignLeft className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setAlignment("center")}
+                        className={`p-2 border-l border-gray-300 ${
+                          alignment === "center" ? "bg-blue-500 text-white" : "bg-white text-gray-700 hover:bg-gray-100"
+                        }`}
+                      >
+                        <AlignCenter className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setAlignment("right")}
+                        className={`p-2 border-l border-gray-300 ${
+                          alignment === "right" ? "bg-blue-500 text-white" : "bg-white text-gray-700 hover:bg-gray-100"
+                        }`}
+                      >
+                        <AlignRight className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => setAlignment("justify")}
+                        className={`p-2 border-l border-gray-300 ${
+                          alignment === "justify" ? "bg-blue-500 text-white" : "bg-white text-gray-700 hover:bg-gray-100"
+                        }`}
+                      >
+                        <AlignJustify className="h-4 w-4" />
+                      </button>
                     </div>
-                  ))}
+                  </div>
                 </div>
               </div>
-            )}
+              
+              {/* Text Editor */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="p-4 border-b border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-semibold text-gray-900">Slide Content</h2>
+                    <div className="flex items-center space-x-2">
+                      <Type className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm text-gray-500">{text.length} characters</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="p-4">
+                  <textarea
+                    className="w-full h-96 p-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                    style={{
+                      backgroundColor: backgroundColor,
+                      color: textColor,
+                      fontSize: `${fontSize}px`,
+                      textAlign: alignment as any,
+                      fontFamily: "Arial, sans-serif",
+                    }}
+                    value={text}
+                    onChange={handleTextChange}
+                  />
+                </div>
+              </div>
+
+              {/* Auto-save Status */}
+              <div className="mt-4 text-center">
+                <div className="flex items-center justify-center space-x-2">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={autoSave}
+                      onChange={(e) => setAutoSave(e.target.checked)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm text-gray-600">Auto-save</span>
+                  </label>
+                  {lastSaved && (
+                    <span className="text-sm text-gray-500">
+                      Last saved: {lastSaved.toLocaleTimeString()}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Modals */}
-      {showBibleVerseSearch && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Search Bible Verses
-            </h2>
-            <input
-              type="text"
-              placeholder="Search for a verse..."
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-            />
-            <div className="mt-4">
-              <button
-                onClick={() => handleAddBibleVerse("John 3:16")}
-                className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-              >
-                Add Verse
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showSongSearch && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Search Songs
-            </h2>
-            <input
-              type="text"
-              placeholder="Search for a song..."
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-            />
-            <div className="mt-4">
-              <button
-                onClick={() => handleAddSong("Amazing Grace")}
-                className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-              >
-                Add Song
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showMediaUpload && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Upload Media
-            </h2>
-            <div className="space-y-4">
-              <button
-                onClick={() => handleAddMedia("image.jpg", "image")}
-                className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-              >
-                Upload Image
-              </button>
-              <button
-                onClick={() => handleAddMedia("video.mp4", "video")}
-                className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-              >
-                Upload Video
-              </button>
-              <button
-                onClick={() => handleAddMedia("audio.mp3", "audio")}
-                className="w-full px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-              >
-                Upload Audio
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    );
   );
 };
 

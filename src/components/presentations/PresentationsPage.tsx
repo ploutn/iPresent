@@ -35,8 +35,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { v4 as uuidv4 } from "uuid";
-import { PresentationTemplate, PresentationContentItem, Slide } from "@/types";
-import { TemplateSelector } from "../templates/TemplateSelector";
+import { PresentationContentItem, Slide } from "@/types";
 import { AnnouncementEditor } from "../announcements/AnnouncementEditor";
 import { PresentationPlayer } from "../presentations/PresentationPlayer";
 import { TemplateShareManager } from "../templates/TemplateShareManager";
@@ -544,42 +543,6 @@ const samplePresentations: PresentationContentItem[] = [
   },
 ];
 
-// Add presentation templates constant
-const presentationTemplates: PresentationTemplate[] = [
-  {
-    id: "church",
-    name: "Church Service",
-    description: "Template for church services",
-    category: "Worship",
-    thumbnail: "",
-    slides: [],
-    image: "",
-    settings: {
-      autoAdvance: false,
-      defaultSlideDuration: 5,
-      theme: "church",
-      transition: "fade",
-      loopPresentation: false,
-      showSlideNumbers: true,
-      showProgressBar: true,
-      allowRemoteControl: true,
-      backgroundColor: "#000000",
-      defaultTransition: {
-        type: "fade",
-        duration: 500,
-        direction: "right",
-        easing: "ease-in-out",
-      },
-      aspectRatio: "16:9",
-      resolution: { width: 1920, height: 1080 },
-    },
-    tags: ["church", "worship", "service"],
-    isBuiltIn: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-];
-
 const PresentationsPage: React.FC = () => {
   const { toast } = useToast();
   const {
@@ -592,7 +555,6 @@ const PresentationsPage: React.FC = () => {
   const [selectedPresentation, setSelectedPresentation] =
     useState<PresentationContentItem | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
-  const [isTemplateSelectorOpen, setIsTemplateSelectorOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -608,7 +570,6 @@ const PresentationsPage: React.FC = () => {
     content: "",
     createdAt: new Date(),
     updatedAt: new Date(),
-    template: "default",
     slides: [],
     category: "Worship",
     tags: [],
@@ -631,13 +592,16 @@ const PresentationsPage: React.FC = () => {
       aspectRatio: "16:9",
       resolution: { width: 1920, height: 1080 },
     },
-    metadata: {
-      version: "1.0",
-      totalSlides: 0,
-      estimatedDuration: 0,
-      isPublic: false,
-      isTemplate: false,
-    },
+      metadata: {
+        version: "1.0",
+        totalSlides: 0,
+        estimatedDuration: 0,
+        fileSize: 0,
+        exportFormats: [],
+        collaborators: [],
+        isPublic: false,
+        isTemplate: false,
+      },
   });
 
   // Load presentations from localStorage
@@ -719,153 +683,6 @@ const PresentationsPage: React.FC = () => {
   );
 
   const handleAddNewPresentation = useCallback(() => {
-    setSelectedPresentation(null);
-    setNewPresentation({
-      title: "",
-      description: "",
-      type: "presentation",
-      content: "",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      template: undefined,
-      slides: [],
-      category: "Worship",
-      tags: [],
-      settings: {
-        autoAdvance: false,
-        defaultSlideDuration: 5,
-        theme: "church",
-        transition: "fade",
-        loopPresentation: false,
-        showSlideNumbers: true,
-        showProgressBar: true,
-        allowRemoteControl: true,
-        backgroundColor: "#000000",
-        defaultTransition: {
-          type: "fade",
-          duration: 500,
-          direction: "right",
-          easing: "ease-in-out",
-        },
-        aspectRatio: "16:9",
-        resolution: { width: 1920, height: 1080 },
-      },
-      metadata: {
-        version: "1.0",
-        lastModifiedBy: "",
-        totalSlides: 0,
-        estimatedDuration: 0,
-        fileSize: 0,
-        exportFormats: [],
-        collaborators: [],
-        isPublic: false,
-        isTemplate: false,
-      },
-    });
-    setIsTemplateSelectorOpen(true);
-  }, []);
-
-  const handleTemplateSelect = (template: PresentationTemplate) => {
-    const newPresentationData: PresentationContentItem = {
-      id: uuidv4(),
-      title: `${template.name} Presentation`,
-      description: template.description,
-      type: "presentation",
-      content: "",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      template: template.id,
-      slides: template.slides.map((slide) => ({
-        id: uuidv4(),
-        title: slide.title || "New Slide",
-        content: slide.content || "",
-        type: "presentation",
-        order: slide.order || 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        backgroundColor: slide.backgroundColor || "#000000",
-        textColor: slide.textColor || "#ffffff",
-        fontSize: slide.fontSize || 24,
-        fontFamily: slide.fontFamily || "Arial",
-        textAlign: slide.textAlign || "center",
-        elements: [
-          {
-            id: uuidv4(),
-            type: "text",
-            content: slide.title || "New Slide",
-            x: 10,
-            y: 10,
-            width: 80,
-            height: 20,
-            fontSize: 36,
-            fontFamily: "Arial",
-            fontColor: "#ffffff",
-            textAlign: "center",
-          },
-        ],
-        transition: slide.transition || {
-          type: "fade",
-          duration: 500,
-          direction: "right",
-          easing: "ease-in-out",
-        },
-        duration: slide.duration || 5,
-        thumbnail: slide.thumbnail || "",
-        notes: slide.notes || "",
-        mediaElements: slide.mediaElements || [],
-        overlaySettings: slide.overlaySettings || {
-          textOverlay: false,
-          textBackground: { enabled: false },
-        },
-      })),
-      category: template.category,
-      tags: template.tags,
-      settings: {
-        autoAdvance: template.settings?.autoAdvance ?? false,
-        defaultSlideDuration: template.settings?.defaultSlideDuration ?? 5,
-        theme: template.settings?.theme ?? "church",
-        transition: template.settings?.transition ?? "fade",
-        loopPresentation: template.settings?.loopPresentation ?? false,
-        showSlideNumbers: template.settings?.showSlideNumbers ?? true,
-        showProgressBar: template.settings?.showProgressBar ?? true,
-        allowRemoteControl: template.settings?.allowRemoteControl ?? true,
-        backgroundColor: template.settings?.backgroundColor ?? "#000000",
-        defaultTransition: template.settings?.defaultTransition ?? {
-          type: "fade",
-          duration: 500,
-          direction: "right",
-          easing: "ease-in-out",
-        },
-        aspectRatio: template.settings?.aspectRatio ?? "16:9",
-        resolution: template.settings?.resolution ?? {
-          width: 1920,
-          height: 1080,
-        },
-      },
-      metadata: {
-        version: "1.0",
-        lastModifiedBy: "",
-        totalSlides: template.slides.length,
-        estimatedDuration: template.slides.reduce(
-          (sum, slide) => sum + (slide.duration || 0),
-          0
-        ),
-        fileSize: 0,
-        exportFormats: [],
-        collaborators: [],
-        isPublic: false,
-        isTemplate: false,
-        templateCategory: template.category,
-      },
-    };
-
-    setSelectedPresentation(newPresentationData);
-    setNewPresentation(newPresentationData);
-    setIsTemplateSelectorOpen(false);
-    setIsEditorOpen(true);
-  };
-
-  const handleCreateBlank = () => {
     const blankPresentation: PresentationContentItem = {
       id: uuidv4(),
       title: "New Presentation",
@@ -874,7 +691,6 @@ const PresentationsPage: React.FC = () => {
       content: "",
       createdAt: new Date(),
       updatedAt: new Date(),
-      template: undefined,
       slides: [
         {
           id: uuidv4(),
@@ -929,7 +745,6 @@ const PresentationsPage: React.FC = () => {
       },
       metadata: {
         version: "1.0",
-        lastModifiedBy: "",
         totalSlides: 1,
         estimatedDuration: 0,
         fileSize: 0,
@@ -937,14 +752,15 @@ const PresentationsPage: React.FC = () => {
         collaborators: [],
         isPublic: false,
         isTemplate: false,
-      },
+      }
     };
 
-    setSelectedPresentation(blankPresentation);
     setNewPresentation(blankPresentation);
-    setIsTemplateSelectorOpen(false);
-    setIsEditorOpen(true);
-  };
+    setSelectedPresentation(blankPresentation);
+    setTimeout(() => {
+      setIsEditorOpen(true);
+    }, 0);
+  }, []);
 
   const handleEditPresentation = useCallback(
     (presentation: PresentationContentItem) => {
@@ -1038,7 +854,6 @@ const PresentationsPage: React.FC = () => {
         description: `${presentationData.title} has been created.`,
       });
     }
-
     setIsEditorOpen(false);
     setSelectedPresentation(null);
     setNewPresentation({
@@ -1107,7 +922,7 @@ const PresentationsPage: React.FC = () => {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Presentations</h1>
           <button
-            onClick={() => setIsTemplateSelectorOpen(true)}
+            onClick={handleAddNewPresentation}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             <Plus className="h-5 w-5 mr-2" />
@@ -1233,84 +1048,34 @@ const PresentationsPage: React.FC = () => {
         )}
       </div>
 
-      {/* Template Selector Modal */}
-      {isTemplateSelectorOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
+      {/* Presentation Editor Modal */}
+      {isEditorOpen && selectedPresentation && (
+        <Dialog open={isEditorOpen} onOpenChange={setIsEditorOpen}>
+          <DialogContent className="max-w-[90vw] h-[90vh] p-0">
+            <div className="flex flex-col h-full">
+              <div className="flex justify-between items-center p-4 border-b">
                 <h2 className="text-2xl font-bold text-gray-900">
-                  Choose a Template
+                  {selectedPresentation.id
+                    ? "Edit Presentation"
+                    : "New Presentation"}
                 </h2>
                 <button
-                  onClick={() => setIsTemplateSelectorOpen(false)}
+                  onClick={() => setIsEditorOpen(false)}
                   className="text-gray-400 hover:text-gray-500"
                 >
                   <X className="h-6 w-6" />
                 </button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {presentationTemplates.map((template) => (
-                  <div
-                    key={template.id}
-                    onClick={() => handleTemplateSelect(template)}
-                    className="cursor-pointer group"
-                  >
-                    <div className="aspect-w-16 aspect-h-9 bg-gray-200 rounded-lg overflow-hidden">
-                      {template.thumbnail ? (
-                        <img
-                          src={template.thumbnail}
-                          alt={template.name}
-                          className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-200"
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center h-full">
-                          <FileText className="h-12 w-12 text-gray-400" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="mt-4">
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {template.name}
-                      </h3>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {template.description}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+              <div className="flex-1 overflow-hidden">
+                <PresentationEditor
+                  presentation={selectedPresentation}
+                  onSave={handleSavePresentation}
+                  onCancel={() => setIsEditorOpen(false)}
+                />
               </div>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Presentation Editor Modal */}
-      {isEditorOpen && selectedPresentation && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full h-[90vh] flex flex-col">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-2xl font-bold text-gray-900">
-                {selectedPresentation.id
-                  ? "Edit Presentation"
-                  : "New Presentation"}
-              </h2>
-              <button
-                onClick={() => setIsEditorOpen(false)}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <PresentationEditor
-                presentation={selectedPresentation}
-                onSave={handleSavePresentation}
-                onCancel={() => setIsEditorOpen(false)}
-              />
-            </div>
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

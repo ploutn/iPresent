@@ -84,7 +84,7 @@ export interface ScheduledItem {
 
 export interface SlideElement {
   id: string;
-  type: "text" | "image" | "video" | "audio" | "bible" | "song";
+  type: "text" | "image" | "video" | "shape";
   content?: string;
   src?: string;
   x: number;
@@ -94,7 +94,9 @@ export interface SlideElement {
   fontSize?: number;
   fontFamily?: string;
   fontColor?: string;
+  textColor?: string;
   textAlign?: "left" | "center" | "right";
+  backgroundColor?: string;
 }
 
 export interface Slide {
@@ -109,7 +111,7 @@ export interface Slide {
   textColor: string;
   fontSize: number;
   fontFamily: string;
-  textAlign: "left" | "center" | "right";
+  textAlign: "left" | "center" | "right" | "justify";
   elements: SlideElement[];
   transition?: SlideTransition;
   duration?: number;
@@ -211,13 +213,13 @@ export interface ScreenState {
 }
 
 export interface PresentationContentItem extends ContentItem {
-  type: "presentation";
   slides: Slide[];
   description?: string;
   author?: string;
-  tags?: string[];
-  category?: string;
   thumbnail?: string;
+  type: "presentation";
+  category?: string;
+  tags?: string[];
   template?: string; // Template ID for styling
   settings: PresentationSettings;
   metadata: PresentationMetadata;
@@ -242,15 +244,15 @@ export interface PresentationSettings {
 }
 
 export interface PresentationMetadata {
-  version: string;
+  version?: string;
+  totalSlides?: number;
+  estimatedDuration?: number; // Total estimated duration in seconds
+  isPublic?: boolean;
+  isTemplate?: boolean;
   lastModifiedBy?: string;
-  totalSlides: number;
-  estimatedDuration: number; // Total estimated duration in seconds
   fileSize?: number; // Size in bytes
   exportFormats?: string[]; // Supported export formats
   collaborators?: string[]; // List of collaborator IDs
-  isPublic: boolean;
-  isTemplate: boolean;
   templateCategory?: string;
 }
 
