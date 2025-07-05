@@ -71,12 +71,13 @@ import { PresentationPlayer } from "../presentations/PresentationPlayer";
 import { BiblePage } from "../bible/BiblePage";
 import { MultiScreenManager } from "../output/MultiScreenManager";
 import { PresentationTemplateManager, TemplatePreview } from "../templates";
-import { TemplateContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { TemplateCustomizer } from "../templates/TemplateCustomizer";
 import { PageNavigation } from "../navigation/PageNavigation";
 import AnnouncementBannerDisplay from "../stageDisplayElements/AnnouncementBannerDisplay";
 import { AnnouncementEditor } from "../announcements/AnnouncementEditor";
 import App from "@/App";
+import { Preview } from "../Preview";
+import { PreviewArea } from "../PreviewArea";
 
 export function SettingsPage(): JSX.Element {
   const { isMobile, isTablet, isDesktop } = useResponsive();

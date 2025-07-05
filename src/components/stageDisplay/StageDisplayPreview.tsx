@@ -3,10 +3,10 @@ import {
   StageDisplayTemplate,
   StageDisplayElement,
 } from "@/types/stageDisplay";
-import { Slide } from "@/types/slide";
+import { Slide } from "@/types";
 import { Card } from "../ui/card";
 import { Button } from "../ui/button";
-import { Maximize2, Minimize2, RefreshCw } from "lucide-react";
+import { Maximize2, Minimize2, RefreshCw, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface StageDisplayPreviewProps {
@@ -54,7 +54,7 @@ export function StageDisplayPreview({
         if (container) {
           const containerWidth = container.clientWidth;
           const containerHeight = container.clientHeight;
-          const aspectRatio = 16 / 9; // Assuming 16:9 aspect ratio
+          const aspectRatio = 16 / 9;
 
           let newScale = 1;
           if (containerWidth / containerHeight > aspectRatio) {
@@ -86,6 +86,12 @@ export function StageDisplayPreview({
       } catch (error) {
         console.error("Error attempting to exit fullscreen:", error);
       }
+    }
+  };
+
+  const openInSecondScreen = () => {
+    if (window.electronAPI) {
+      window.electronAPI.openPresentationWindow();
     }
   };
 
@@ -271,6 +277,15 @@ export function StageDisplayPreview({
 
       {/* Controls */}
       <div className="absolute bottom-4 right-4 flex gap-2">
+        <Button
+          variant="secondary"
+          size="icon"
+          onClick={openInSecondScreen}
+          className="bg-black/50 hover:bg-black/70"
+          title="Open in second screen"
+        >
+          <ExternalLink className="h-4 w-4" />
+        </Button>
         <Button
           variant="secondary"
           size="icon"

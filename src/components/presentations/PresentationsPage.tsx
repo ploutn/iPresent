@@ -1,6 +1,7 @@
 // src/components/presentations/PresentationsPage.tsx
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useContentStore } from "@/stores/useContentStore";
+import { ContentItem } from "@/types";
 import { usePresentationStore } from "@/store/presentationStore";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
@@ -20,6 +21,7 @@ import {
 } from "lucide-react";
 import {
   Dialog,
+  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -56,6 +58,7 @@ import {
 } from "../ui/select";
 import { Checkbox } from "../ui/checkbox";
 import PresentationEditor from "./PresentationEditor";
+import { Preview } from "../presentation/Preview";
 
 const samplePresentations: PresentationContentItem[] = [
   {
@@ -545,6 +548,7 @@ const samplePresentations: PresentationContentItem[] = [
 
 const PresentationsPage: React.FC = () => {
   const { toast } = useToast();
+  const { setSelectedItem } = useContentStore();
   const {
     presentations,
     setPresentations,
@@ -561,6 +565,8 @@ const PresentationsPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"date" | "name">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [newPresentationTitle, setNewPresentationTitle] = useState("");
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [newPresentation, setNewPresentation] = useState<
     Partial<PresentationContentItem>
   >({
@@ -592,26 +598,28 @@ const PresentationsPage: React.FC = () => {
       aspectRatio: "16:9",
       resolution: { width: 1920, height: 1080 },
     },
-      metadata: {
-        version: "1.0",
-        totalSlides: 0,
-        estimatedDuration: 0,
-        fileSize: 0,
-        exportFormats: [],
-        collaborators: [],
-        isPublic: false,
-        isTemplate: false,
-      },
+    metadata: {
+      version: "1.0",
+      totalSlides: 0,
+      estimatedDuration: 0,
+      fileSize: 0,
+      exportFormats: [],
+      collaborators: [],
+      isPublic: false,
+      isTemplate: false,
+    },
   });
 
   // Load presentations from localStorage
   useEffect(() => {
     try {
       setIsLoading(true);
-      const savedPresentations = localStorage.getItem("presentations");
+      const savedPresentations = localStorage.getItem("presentation-storage");
       if (savedPresentations) {
-        const parsedPresentations = JSON.parse(savedPresentations);
-        setPresentations(parsedPresentations);
+        const parsedData = JSON.parse(savedPresentations);
+        if (parsedData.state && parsedData.state.presentations) {
+          setPresentations(parsedData.state.presentations);
+        }
       }
     } catch (err) {
       console.error("Error loading presentations:", err);
@@ -619,11 +627,18 @@ const PresentationsPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [setPresentations]);
 
   // Save presentations to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem("presentations", JSON.stringify(presentations));
+    if (presentations.length > 0) {
+      localStorage.setItem(
+        "presentation-storage",
+        JSON.stringify({
+          state: { presentations },
+        })
+      );
+    }
   }, [presentations]);
 
   // Filter and sort presentations
@@ -661,7 +676,7 @@ const PresentationsPage: React.FC = () => {
       setSelectedPresentation(presentation);
       setIsEditorOpen(true);
     },
-    []
+    [setSelectedItem]
   );
 
   const handleDuplicatePresentation = useCallback(
@@ -683,14 +698,15 @@ const PresentationsPage: React.FC = () => {
   );
 
   const handleAddNewPresentation = useCallback(() => {
+    const now = new Date();
     const blankPresentation: PresentationContentItem = {
       id: uuidv4(),
-      title: "New Presentation",
+      title: newPresentationTitle || "New Presentation",
       description: "",
       type: "presentation",
       content: "",
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: now,
+      updatedAt: now,
       slides: [
         {
           id: uuidv4(),
@@ -698,8 +714,8 @@ const PresentationsPage: React.FC = () => {
           content: "",
           type: "presentation",
           order: 0,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          createdAt: now,
+          updatedAt: now,
           backgroundColor: "#000000",
           textColor: "#ffffff",
           fontSize: 24,
@@ -720,6 +736,7 @@ const PresentationsPage: React.FC = () => {
               textAlign: "center",
             },
           ],
+          duration: 5,
         },
       ],
       category: "Worship",
@@ -746,21 +763,21 @@ const PresentationsPage: React.FC = () => {
       metadata: {
         version: "1.0",
         totalSlides: 1,
-        estimatedDuration: 0,
-        fileSize: 0,
-        exportFormats: [],
-        collaborators: [],
+        estimatedDuration: 5,
         isPublic: false,
         isTemplate: false,
-      }
+      },
     };
 
-    setNewPresentation(blankPresentation);
+    // First add the presentation to the store
+    addPresentation(blankPresentation);
+
+    // Then set it as the selected presentation and open the editor
     setSelectedPresentation(blankPresentation);
-    setTimeout(() => {
-      setIsEditorOpen(true);
-    }, 0);
-  }, []);
+    setNewPresentationTitle(""); // Clear the input field
+    setNewPresentation(blankPresentation);
+    setIsEditorOpen(true);
+  }, [addPresentation]);
 
   const handleEditPresentation = useCallback(
     (presentation: PresentationContentItem) => {
@@ -787,124 +804,223 @@ const PresentationsPage: React.FC = () => {
     [deletePresentation, toast]
   );
 
-  const handleSavePresentation = useCallback(() => {
-    if (!newPresentation.title?.trim()) {
-      toast({
-        title: "Error",
-        description: "Presentation title cannot be empty.",
-        variant: "destructive",
-      });
-      return;
-    }
+  const handleSavePresentation = useCallback(
+    (
+      updatedPresentation?: PresentationContentItem,
+      shouldClose: boolean = true
+    ) => {
+      // If updatedPresentation is provided (from editor), use it directly
+      if (updatedPresentation) {
+        const now = new Date();
+        const presentationData = {
+          ...updatedPresentation,
+          updatedAt: now,
+          settings: {
+            ...updatedPresentation.settings,
+            defaultSlideDuration:
+              updatedPresentation.settings?.defaultSlideDuration || 5,
+            theme: updatedPresentation.settings?.theme || "church",
+            transition: updatedPresentation.settings?.transition || "fade",
+            loopPresentation:
+              updatedPresentation.settings?.loopPresentation || false,
+            showSlideNumbers:
+              updatedPresentation.settings?.showSlideNumbers ?? true,
+            showProgressBar:
+              updatedPresentation.settings?.showProgressBar ?? true,
+            allowRemoteControl:
+              updatedPresentation.settings?.allowRemoteControl ?? true,
+            backgroundColor:
+              updatedPresentation.settings?.backgroundColor || "#000000",
+            defaultTransition: updatedPresentation.settings
+              ?.defaultTransition || {
+              type: "fade",
+              duration: 500,
+              direction: "right",
+              easing: "ease-in-out",
+            },
+            aspectRatio: updatedPresentation.settings?.aspectRatio || "16:9",
+            resolution: updatedPresentation.settings?.resolution || {
+              width: 1920,
+              height: 1080,
+            },
+          },
+          metadata: {
+            ...updatedPresentation.metadata,
+            version: "1.0",
+            totalSlides: updatedPresentation.slides?.length || 0,
+            estimatedDuration:
+              updatedPresentation.slides?.reduce(
+                (sum, slide) =>
+                  sum +
+                  (slide.duration ||
+                    updatedPresentation.settings?.defaultSlideDuration ||
+                    5),
+                0
+              ) || 0,
+            isPublic: updatedPresentation.metadata?.isPublic || false,
+            isTemplate: updatedPresentation.metadata?.isTemplate || false,
+          },
+        };
 
-    const now = new Date();
-    const presentationData: PresentationContentItem = {
-      id: selectedPresentation?.id || uuidv4(),
-      title: newPresentation.title,
-      description: newPresentation.description || "",
-      slides: newPresentation.slides || [],
-      createdAt: selectedPresentation?.createdAt || now,
-      updatedAt: now,
-      type: "presentation" as const,
-      content: newPresentation.description || "",
-      category: newPresentation.category || "Uncategorized",
-      tags: newPresentation.tags || [],
-      template: newPresentation.template,
-      settings: {
-        autoAdvance: false,
-        defaultSlideDuration: 5,
-        theme: "default",
-        transition: "fade",
-        loopPresentation: false,
-        showSlideNumbers: false,
-        showProgressBar: false,
-        allowRemoteControl: false,
-        backgroundColor: "#000000",
-        defaultTransition: {
-          type: "fade",
-          duration: 500,
-          direction: "right",
-          easing: "ease-in-out",
-        },
-        aspectRatio: "16:9",
-        resolution: { width: 1920, height: 1080 },
-      },
-      metadata: {
-        version: "1.0",
-        totalSlides: (newPresentation.slides || []).length,
-        estimatedDuration: (newPresentation.slides || []).reduce(
-          (sum, slide) => sum + (slide.duration || 0),
-          0
-        ),
-        isPublic: false,
-        isTemplate: false,
-      },
-    };
+        if (selectedPresentation?.id) {
+          updatePresentation(selectedPresentation.id, presentationData);
+          setSelectedPresentation(presentationData);
+          if (shouldClose) {
+            toast({
+              title: "Presentation Saved",
+              description: `${presentationData.title} has been saved.`,
+            });
+          }
+        } else {
+          addPresentation(presentationData);
+          setSelectedPresentation(presentationData);
+          if (shouldClose) {
+            toast({
+              title: "Presentation Created",
+              description: `${presentationData.title} has been created.`,
+            });
+          }
+        }
 
-    if (selectedPresentation) {
-      updatePresentation(selectedPresentation.id, presentationData);
-      toast({
-        title: "Presentation Updated",
-        description: `${presentationData.title} has been updated.`,
-      });
-    } else {
-      addPresentation(presentationData);
-      toast({
-        title: "Presentation Created",
-        description: `${presentationData.title} has been created.`,
-      });
-    }
-    setIsEditorOpen(false);
-    setSelectedPresentation(null);
-    setNewPresentation({
-      title: "",
-      description: "",
-      type: "presentation",
-      content: "",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      template: "default",
-      slides: [],
-      category: "Worship",
-      tags: [],
-      settings: {
-        autoAdvance: false,
-        defaultSlideDuration: 5,
-        theme: "church",
-        transition: "fade",
-        loopPresentation: false,
-        showSlideNumbers: true,
-        showProgressBar: true,
-        allowRemoteControl: true,
-        backgroundColor: "#000000",
-        defaultTransition: {
-          type: "fade",
-          duration: 500,
-          direction: "right",
-          easing: "ease-in-out",
+        if (shouldClose) {
+          setIsEditorOpen(false);
+          setSelectedPresentation(null);
+        }
+        return;
+      }
+
+      // Fallback to original logic for manual form submission
+      if (!newPresentation.title?.trim()) {
+        toast({
+          title: "Error",
+          description: "Presentation title cannot be empty.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const now = new Date();
+      const presentationData: PresentationContentItem = {
+        id: selectedPresentation?.id || uuidv4(),
+        title: newPresentation.title,
+        description: newPresentation.description || "",
+        type: "presentation",
+        content: newPresentation.description || "",
+        createdAt: selectedPresentation?.createdAt || now,
+        updatedAt: now,
+        slides: newPresentation.slides || [],
+        category: newPresentation.category || "Uncategorized",
+        tags: newPresentation.tags || [],
+        template: newPresentation.template,
+        settings: {
+          autoAdvance: false,
+          defaultSlideDuration: 5,
+          theme: "church",
+          transition: "fade",
+          loopPresentation: false,
+          showSlideNumbers: true,
+          showProgressBar: true,
+          allowRemoteControl: true,
+          backgroundColor: "#000000",
+          defaultTransition: {
+            type: "fade",
+            duration: 500,
+            direction: "right",
+            easing: "ease-in-out",
+          },
+          aspectRatio: "16:9",
+          resolution: { width: 1920, height: 1080 },
         },
-        aspectRatio: "16:9",
-        resolution: { width: 1920, height: 1080 },
-      },
-      metadata: {
-        version: "1.0",
-        totalSlides: 0,
-        estimatedDuration: 0,
-        isPublic: false,
-        isTemplate: false,
-      },
-    });
-  }, [
-    newPresentation,
-    selectedPresentation,
-    updatePresentation,
-    addPresentation,
-    toast,
-  ]);
+        metadata: {
+          version: "1.0",
+          totalSlides: (newPresentation.slides || []).length,
+          estimatedDuration: (newPresentation.slides || []).reduce(
+            (sum, slide) => sum + (slide.duration || 5),
+            0
+          ),
+          isPublic: false,
+          isTemplate: false,
+        },
+      };
+
+      if (selectedPresentation?.id) {
+        updatePresentation(selectedPresentation.id, presentationData);
+        toast({
+          title: "Presentation Updated",
+          description: `${presentationData.title} has been updated.`,
+        });
+      } else {
+        addPresentation(presentationData);
+        toast({
+          title: "Presentation Created",
+          description: `${presentationData.title} has been created.`,
+        });
+      }
+
+      if (shouldClose) {
+        setIsEditorOpen(false);
+        setSelectedPresentation(null);
+      }
+      setNewPresentation({
+        title: "",
+        description: "",
+        type: "presentation",
+        content: "",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        template: "default",
+        slides: [],
+        category: "Worship",
+        tags: [],
+        settings: {
+          autoAdvance: false,
+          defaultSlideDuration: 5,
+          theme: "church",
+          transition: "fade",
+          loopPresentation: false,
+          showSlideNumbers: true,
+          showProgressBar: true,
+          allowRemoteControl: true,
+          backgroundColor: "#000000",
+          defaultTransition: {
+            type: "fade",
+            duration: 500,
+            direction: "right",
+            easing: "ease-in-out",
+          },
+          aspectRatio: "16:9",
+          resolution: { width: 1920, height: 1080 },
+        },
+        metadata: {
+          version: "1.0",
+          totalSlides: 0,
+          estimatedDuration: 0,
+          isPublic: false,
+          isTemplate: false,
+        },
+      });
+    },
+    [
+      newPresentation,
+      selectedPresentation,
+      updatePresentation,
+      addPresentation,
+      toast,
+    ]
+  );
 
   const handleSharePresentation = useCallback(
     (presentation: PresentationContentItem) => {
       // Implement share logic here
+    },
+    []
+  );
+
+  const handlePreviewPresentation = useCallback(
+    (presentation: PresentationContentItem) => {
+      setSelectedPresentation(presentation);
+      setSelectedItem(presentation as ContentItem);
+      setIsPreviewOpen(true);
     },
     []
   );
@@ -917,17 +1033,44 @@ const PresentationsPage: React.FC = () => {
   }, [presentations]);
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen" style={{ backgroundColor: "#10142c" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Presentations</h1>
-          <button
-            onClick={handleAddNewPresentation}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            <Plus className="h-5 w-5 mr-2" />
-            New Presentation
-          </button>
+          <h1 className="text-3xl font-bold text-white">Presentations</h1>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <Plus className="h-5 w-5 mr-2" />
+                New Presentation
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create New Presentation</DialogTitle>
+                <DialogDescription>
+                  Enter a title for your new presentation.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="newPresentationTitle" className="text-right">
+                    Title
+                  </Label>
+                  <Input
+                    id="newPresentationTitle"
+                    value={newPresentationTitle}
+                    onChange={(e) => setNewPresentationTitle(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="submit" onClick={handleAddNewPresentation}>
+                  Create
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Search and Filter Bar */}
@@ -988,7 +1131,7 @@ const PresentationsPage: React.FC = () => {
             {filteredPresentations.map((presentation) => (
               <div
                 key={presentation.id}
-                className="bg-white rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow duration-200"
+                className="bg-[#1a2035] rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow duration-200"
               >
                 <div className="aspect-w-16 aspect-h-9 bg-gray-200">
                   {presentation.slides[0]?.thumbnail ? (
@@ -1004,10 +1147,10 @@ const PresentationsPage: React.FC = () => {
                   )}
                 </div>
                 <div className="p-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  <h3 className="text-lg font-semibold text-white mb-2">
                     {presentation.title}
                   </h3>
-                  <p className="text-sm text-gray-500 mb-4">
+                  <p className="text-sm text-gray-300 mb-4">
                     {presentation.description}
                   </p>
                   <div className="flex flex-wrap gap-2 mb-4">
@@ -1032,6 +1175,12 @@ const PresentationsPage: React.FC = () => {
                         <Edit className="h-5 w-5" />
                       </button>
                       <button
+                        onClick={() => handlePreviewPresentation(presentation)}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        <Eye className="h-5 w-5" />
+                      </button>
+                      <button
                         onClick={() =>
                           handleDeletePresentation(presentation.id)
                         }
@@ -1049,6 +1198,29 @@ const PresentationsPage: React.FC = () => {
       </div>
 
       {/* Presentation Editor Modal */}
+      {isEditorOpen && selectedPresentation && (
+        <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+          <DialogContent className="max-w-[90vw] h-[90vh] p-0">
+            <div className="flex flex-col h-full">
+              <div className="flex justify-between items-center p-4 border-b">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Preview: {selectedPresentation.title}
+                </h2>
+                <button
+                  onClick={() => setIsPreviewOpen(false)}
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <Preview />
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
       {isEditorOpen && selectedPresentation && (
         <Dialog open={isEditorOpen} onOpenChange={setIsEditorOpen}>
           <DialogContent className="max-w-[90vw] h-[90vh] p-0">

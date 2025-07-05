@@ -12,9 +12,9 @@ import { NavigationHeader } from "./components/navigation/NavigationHeader";
 import { Suspense, lazy } from "react";
 
 // Lazy load main page components for better code splitting
-const HomePage = lazy(() =>
-  import("./components/home/HomePage").then((module) => ({
-    default: module.HomePage,
+const NewHomePage = lazy(() =>
+  import("./components/home/NewHomePage").then((module) => ({
+    default: module.NewHomePage,
   }))
 );
 const SongsPage = lazy(() =>
@@ -62,7 +62,7 @@ const OutputWindow = lazy(() =>
 import { useSidebar } from "./components/hooks/useSidebar";
 import { ContentForm } from "./components/ContentForm";
 import { useContentStore } from "./stores/useContentStore";
-import { Preview } from "./components/Preview"; // Ensure Preview is imported
+import { Preview } from "./components/presentation/Preview"; // Ensure Preview is imported
 import { ScheduleView } from "./components/ScheduleView";
 import { LivePresentation } from "./components/LivePresentation";
 import {
@@ -101,6 +101,8 @@ import { AnyInteractiveElement } from "./types/interactive";
 import { MediaCacheProvider } from "./components/media/MediaCacheProvider";
 import { ThemeProvider } from "./components/theme/ThemeProvider";
 import { QuickThemeToggle } from "./components/theme/ThemeToggle";
+import { StageDisplayPreview } from "./components/stageDisplay/StageDisplayPreview";
+import { PreviewArea } from "./components/PreviewArea";
 
 // Loading component for lazy-loaded pages
 const PageLoader = () => (
@@ -139,7 +141,7 @@ function MainAppContent() {
     const content = (() => {
       switch (activeTab) {
         case "home":
-          return <HomePage />;
+          return <NewHomePage />;
         case "songs":
           return <SongsPage />;
         case "bible":
@@ -168,7 +170,7 @@ function MainAppContent() {
             </div>
           );
         default:
-          return <HomePage />;
+          return <NewHomePage />;
       }
     })();
 
@@ -371,9 +373,6 @@ function MainAppContent() {
               }`}
             >
               <div className="bg-card rounded-xl shadow-lg p-6 flex-1 flex flex-col">
-                <h2 className="text-lg font-bold mb-4 tracking-wide text-foreground">
-                  PREVIEW
-                </h2>
                 <div className="flex-1 flex flex-col items-stretch justify-stretch">
                   <Preview />
                 </div>

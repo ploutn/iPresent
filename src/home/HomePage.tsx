@@ -1,8 +1,14 @@
 import { ResponsiveCard, ResponsiveText } from "../components/ResponsiveCard";
 import { useResponsive } from "../hooks/useResponsive";
+import { useSidebar } from "../components/hooks/useSidebar";
 
 export const HomePage = () => {
   const { isMobile, isTablet } = useResponsive();
+  const { setActiveTab } = useSidebar();
+
+  const handleNavigation = (tab) => {
+    setActiveTab(tab);
+  };
 
   return (
     <div className="container-responsive py-6">
@@ -20,11 +26,14 @@ export const HomePage = () => {
 
         {/* Quick Actions Grid */}
         <div className="grid-responsive-3 gap-responsive">
-          <ResponsiveCard className="card-responsive hover:shadow-md transition-shadow">
-            <div className="space-y-3">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+          <ResponsiveCard
+            className="card-responsive-lg hover:shadow-lg transition-shadow cursor-pointer"
+            onClick={() => handleNavigation("songs")}
+          >
+            <div className="space-y-4">
+              <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-primary"
+                  className="w-8 h-8 text-primary"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -38,7 +47,7 @@ export const HomePage = () => {
                 </svg>
               </div>
               <div>
-                <h3 className="text-responsive-lg font-semibold">Songs</h3>
+                <h3 className="text-responsive-xl font-semibold">Songs</h3>
                 <ResponsiveText className="text-muted-foreground">
                   Manage your worship songs and lyrics
                 </ResponsiveText>
@@ -46,11 +55,14 @@ export const HomePage = () => {
             </div>
           </ResponsiveCard>
 
-          <ResponsiveCard className="card-responsive hover:shadow-md transition-shadow">
-            <div className="space-y-3">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+          <ResponsiveCard
+            className="card-responsive-lg hover:shadow-lg transition-shadow cursor-pointer"
+            onClick={() => handleNavigation("bible")}
+          >
+            <div className="space-y-4">
+              <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-primary"
+                  className="w-8 h-8 text-primary"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -64,7 +76,7 @@ export const HomePage = () => {
                 </svg>
               </div>
               <div>
-                <h3 className="text-responsive-lg font-semibold">Bible</h3>
+                <h3 className="text-responsive-xl font-semibold">Bible</h3>
                 <ResponsiveText className="text-muted-foreground">
                   Access scripture passages and verses
                 </ResponsiveText>
@@ -72,11 +84,14 @@ export const HomePage = () => {
             </div>
           </ResponsiveCard>
 
-          <ResponsiveCard className="card-responsive hover:shadow-md transition-shadow">
-            <div className="space-y-3">
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+          <ResponsiveCard
+            className="card-responsive-lg hover:shadow-lg transition-shadow cursor-pointer"
+            onClick={() => handleNavigation("media")}
+          >
+            <div className="space-y-4">
+              <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center">
                 <svg
-                  className="w-6 h-6 text-primary"
+                  className="w-8 h-8 text-primary"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -90,7 +105,7 @@ export const HomePage = () => {
                 </svg>
               </div>
               <div>
-                <h3 className="text-responsive-lg font-semibold">Media</h3>
+                <h3 className="text-responsive-xl font-semibold">Media</h3>
                 <ResponsiveText className="text-muted-foreground">
                   Manage videos, images, and presentations
                 </ResponsiveText>
